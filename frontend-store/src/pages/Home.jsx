@@ -1,9 +1,10 @@
+// home.jsx
 import React, { useEffect, useState } from "react";
 import ProductGrid from "../components/ProductGrid";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import hero4 from "../assets/hero4.png"
-
+import hero4 from "../assets/hero4.png";
+import { motion } from "framer-motion";
 
 function Home() {
   const [products, setProducts] = useState([]);
@@ -35,7 +36,7 @@ function Home() {
                 <div className="h-4 bg-gray-200 rounded mb-3"></div>
                 <div className="h-4 bg-gray-200 rounded w-2/3 mb-4"></div>
                 <div className="h-10 bg-gray-200 rounded"></div>
-              </div>           
+              </div>
             </div>
           ))}
         </div>
@@ -48,39 +49,46 @@ function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Navbar />
-      {/* Hero Section */}
-      <section
-        className="relative bg-cover bg-center bg-no-repeat overflow-hidden min-h-[400px] md:min-h-[500px] lg:min-h-[700px] flex items-center"
-        style={{ backgroundImage: `url(${hero4})` }}
-      >
-        <div className="relative z-10 max-w-7xl mx-auto px-6 py-16 md:py-24 w-full">
-          <div className="max-w-xl">
-            {/* Left Content */}
-            <div className="space-y-6">
-              <p className="text-sm md:text-base text-gray-700 font-medium tracking-wide">
-                Trade-in-offer
-              </p>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-gray-900">
-                Super value deals
-                <br />
-                <span className="text-teal-600">On all products</span>
-              </h1>
-              <p className="text-lg md:text-xl text-gray-700">
-                Save more with coupons & up to 70% off!
-              </p>
-              <button className="bg-amber-200 hover:bg-amber-300 text-teal-700 font-semibold px-8 py-4 rounded-full transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
-                Shop Now
-              </button>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className="min-h-screen bg-gray-100">
+        <Navbar />
+        {/* Hero Section */}
+        <section
+          className="relative bg-no-repeat bg-cover bg-[top_25%_right_0] overflow-hidden min-h-[90vh] w-full px-20 flex items-center"
+          style={{ backgroundImage: `url(${hero4})` }}
+        >
+          <div className="relative z-10 max-w-7xl mx-auto px-6 py-16 md:py-24 w-full">
+            <div className="max-w-xl">
+              {/* Left Content */}
+              <div className="space-y-6">
+                <p className="text-sm md:text-base text-gray-700 font-medium tracking-wide">
+                  Trade-in-offer
+                </p>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-gray-900">
+                  Super value deals
+                  <br />
+                  <span className="text-teal-600">On all products</span>
+                </h1>
+                <p className="text-lg md:text-xl text-gray-700">
+                  Save more with coupons & up to 70% off!
+                </p>
+                <button className="bg-amber-200 hover:bg-amber-300 text-teal-700 font-semibold px-8 py-4 rounded-full transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
+                  Shop Now
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <ProductGrid products={products} onAddToCart={handleAddToCart} />
-      <Footer />
-    </div>
+        <ProductGrid products={products} onAddToCart={handleAddToCart} />
+        <Footer />
+      </div>
+    </motion.div>
   );
 }
 
