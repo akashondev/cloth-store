@@ -12,6 +12,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Shop from "./pages/Shop";
 import Blog from "./pages/Blog";
+import CartPage from "./pages/Cart";
 import ScrollTopBtn from "./components/ScrollTopBtn";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -20,16 +21,17 @@ function AnimatedRoutes() {
 
   return (
     <>
-    <ScrollTopBtn />
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Home />} />
-        <Route path="/shop" element={<Shop />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-      </Routes>
-    </AnimatePresence>
+      <ScrollTopBtn />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Routes>
+      </AnimatePresence>
     </>
   );
 }
