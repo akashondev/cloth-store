@@ -1,98 +1,68 @@
 import express from "express";
-import NewProduct from "../models/Product.js";
+import Product from "../models/Product.js";
 
 const router = express.Router();
 
-// ➕ Add one or multiple products
-router.post("/addproduct", async (req, res) => {
+// CREATE (add product)
+router.post("/", async (req, res) => {
   try {
-    // If the body is an array => bulk insert
     if (Array.isArray(req.body)) {
-      const products = req.body;
-
-      // Basic validation for each product
-      for (const p of products) {
-        if (!p.title || !p.price || !p.category || !p.description || !p.images?.length) {
-          return res.status(400).json({
-            success: false,
-            message: "Each product must include title, price, category, description, and images[]",
-          });
-        }
-      }
-
-      const savedProducts = await NewProduct.insertMany(products);
+      const saved = await Product.insertMany(req.body, { runValidators: true });
       return res.status(201).json({
         success: true,
         message: "Products added successfully",
-        data: savedProducts,
+        data: saved,
       });
     }
 
-    // Single product insert
-    const { title, price, category, description, images } = req.body;
-
-    if (!title || !price || !category || !description || !images?.length) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "All fields (title, price, category, description, images[]) are required",
-      });
-    }
-
-    const newProduct = new NewProduct({ title, price, category, description, images });
-    const savedProduct = await newProduct.save();
+    const product = new Product(req.body);
+    const saved = await product.save();
 
     res.status(201).json({
       success: true,
       message: "Product added successfully",
-      data: savedProduct,
+      data: saved,
     });
   } catch (error) {
-    console.error("Error adding product:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
-
-// 📋 Get all products
-router.get("/product", async (req, res) => {
+// READ ALL
+router.get("/", async (req, res) => {
   try {
-    const products = await NewProduct.find();
-    // console.log(products);
-    res.status(200).json(products);
+    const data = await Product.find();
+    res.status(200).json(data);
   } catch (error) {
-    console.error("Error fetching products:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 });
 
-// 🔍 Get product by ID
-router.get("/product/:id", async (req, res) => {
+// READ ONE
+router.get("/:id", async (req, res) => {
   try {
-    const product = await NewProduct.findById(req.params.id);
-    if (!product)
+    const item = await Product.findById(req.params.id);
+
+    if (!item)
       return res
         .status(404)
         .json({ success: false, message: "Product not found" });
-    res.status(200).json(product);
+
+    res.status(200).json(item);
   } catch (error) {
-    console.error("Error fetching product by ID:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 });
 
-// ✏️ Update product
-router.put("/product/:id", async (req, res) => {
+// UPDATE
+router.put("/:id", async (req, res) => {
   try {
-    const { title, price, category, description, images } = req.body;
+    const updated = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
-    const updatedProduct = await NewProduct.findByIdAndUpdate(
-      req.params.id,
-      { title, price, category, description, images },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedProduct)
+    if (!updated)
       return res
         .status(404)
         .json({ success: false, message: "Product not found" });
@@ -100,19 +70,19 @@ router.put("/product/:id", async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Product updated successfully",
-      data: updatedProduct,
+      data: updated,
     });
   } catch (error) {
-    console.error("Error updating product:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// ❌ Delete product
-router.delete("/product/:id", async (req, res) => {
+// DELETE
+router.delete("/:id", async (req, res) => {
   try {
-    const deletedProduct = await NewProduct.findByIdAndDelete(req.params.id);
-    if (!deletedProduct)
+    const deleted = await Product.findByIdAndDelete(req.params.id);
+
+    if (!deleted)
       return res
         .status(404)
         .json({ success: false, message: "Product not found" });
@@ -122,7 +92,6 @@ router.delete("/product/:id", async (req, res) => {
       message: "Product deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting product:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 });

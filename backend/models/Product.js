@@ -1,15 +1,14 @@
 import mongoose from "mongoose";
 
-const newProductSchema = new mongoose.Schema({
+const ProductSchema = new mongoose.Schema({
   title: { type: String, required: true },
   price: { type: Number, required: true },
   category: { type: String, required: true },
   description: { type: String, required: true },
   images: {
-    type: [String], // array of image URLs
+    type: [String],
     validate: [(val) => val.length >= 1, "At least one image is required"],
   },
 });
 
-const Product = mongoose.model("NewProduct", newProductSchema);
-export default Product;
+export default mongoose.model("Product", ProductSchema);
