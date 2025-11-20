@@ -1,6 +1,4 @@
 import React from "react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
 import { motion } from "framer-motion";
 
 const Shop = () => {
@@ -12,9 +10,9 @@ const Shop = () => {
       transition={{ duration:  0.2 }}
     >
       <div className="min-h-screen items-center justify-center bg-gray-100">
-        <Navbar />
+        
         <h2 className="text-3xl font-semibold">Shop!!</h2>
-        <Footer />
+  
       </div>
     </motion.div>
   );

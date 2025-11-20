@@ -1,14 +1,18 @@
-// home.jsx
 import React, { useEffect, useState } from "react";
 import ProductGrid from "../components/ProductGrid";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
 import hero4 from "../assets/hero4.png";
 import { motion } from "framer-motion";
 
 function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [cartCount, setCartCount] = useState(0);
+
+  const handleAdd = (id) => {
+    setCartCount((prev) => {
+      return prev + 1;
+    });
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -44,9 +48,6 @@ function Home() {
     );
   }
 
-  const handleAddToCart = (id) => {
-    console.log(`Added product ${id}`);
-  };
 
   return (
     <motion.div
@@ -56,7 +57,6 @@ function Home() {
       transition={{ duration: 0.2 }}
     >
       <div className="min-h-screen bg-gray-100">
-        <Navbar />
         {/* Hero Section */}
         <section
           className="relative bg-no-repeat bg-cover bg-[top_25%_right_0] overflow-hidden min-h-[90vh] w-full px-20 flex items-center"
@@ -85,8 +85,7 @@ function Home() {
           </div>
         </section>
 
-        <ProductGrid products={products} onAddToCart={handleAddToCart} />
-        <Footer />
+        <ProductGrid products={products} handleAdd={handleAdd} />
       </div>
     </motion.div>
   );

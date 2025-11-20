@@ -1,8 +1,39 @@
 import React, { useState, useEffect } from "react";
+import { ShoppingCart } from "lucide-react";
 
-function ProductGrid({ products, onAddToCart }) {
+function ProductGrid({ products, handleAdd }) {
   const [visibleCount, setVisibleCount] = useState(16);
   const [safeProducts, setSafeProducts] = useState([]);
+
+  // 1. loadCart
+  const loadCart = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("cart"));
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  };
+
+  // 2. saveCart
+  const saveCart = (cart) => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  };
+
+  // 3. addToCart
+  const addToCart = (product) => {
+    let cart = loadCart();
+    const exists = cart.find((item) => item.id === product.id);
+
+    if (exists) {
+      exists.qty += 1;
+    } else {
+      cart.push({ ...product, qty: 1 });
+    }
+
+    saveCart(cart);
+  };
+
 
   // Validate and sanitize products prop
   useEffect(() => {
@@ -27,14 +58,16 @@ function ProductGrid({ products, onAddToCart }) {
         {visibleProducts.map((p) => (
           <div
             key={p._id || p.id}
-            className="group relative overflow-hidden bg-white rounded-lg shadow-sm hover:shadow-lg transition"
+            className="group relative overflow-hidden bg-white rounded-lg shadow-sm 
+             hover:shadow-xl transition-all duration-300 
+             hover:-translate-y-1 hover:scale-[1]"
           >
             {/* Product Image */}
             <div className="relative w-full h-80 bg-gray-100 flex items-center justify-center overflow-hidden">
               <img
                 src={p.images?.[0] || "https://via.placeholder.com/300"}
                 alt={p.title || "Product"}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-full object-cover"
               />
             </div>
 
@@ -49,19 +82,27 @@ function ProductGrid({ products, onAddToCart }) {
                   ₹{p.price ?? "--"}
                 </span>
                 {p.originalPrice && (
-                  <span className="text-gray-400 line-through text-sm">
+                  <span className="text-gray-400 line-through text-sm ">
                     ₹{p.originalPrice}
                   </span>
                 )}
-              </div>
 
-              <button
-                onClick={() => onAddToCart?.(p._id || p.id)}
-                className="block text-center w-full py-2 px-4 rounded-md border-2 border-gray-600 text-gray-800 text-xs font-semibold hover:bg-gray-800 hover:text-white transition-all duration-300"
-              >
-                Add to Cart
-              </button>
-            </div>            
+                <button
+                  onClick={() => {
+                    addToCart({
+                      id: p._id || p.id,
+                      title: p.title,
+                      price: p.price,
+                    });
+                    handleAdd?.(p._id || p.id);
+                  }}
+                  className="absolute bottom-4 right-4 w-11 h-11 bg-white rounded-full shadow-lg flex items-center justify-center
+                    transition-all duration-300 hover:bg-[#0D9488] hover:text-white transform hover:scale-110"
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -75,8 +116,7 @@ function ProductGrid({ products, onAddToCart }) {
           >
             Load More
           </button>
-          
-        </div>        
+        </div>
       )}
     </div>
   );

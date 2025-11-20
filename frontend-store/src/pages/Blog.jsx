@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
 import { motion } from "framer-motion";
 
 const Blog = () => {
@@ -68,7 +66,6 @@ const Blog = () => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2  }}>
     <div className="min-h-screen bg-gray-100">
-      <Navbar />
 
       {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white py-32 overflow-hidden">
@@ -164,7 +161,6 @@ const Blog = () => {
         </div>
       </div>
 
-      <Footer />
       </div>
       </motion.div>
   );

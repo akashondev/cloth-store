@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ShoppingCart, User, Menu } from "lucide-react";
 import logo from "../assets/logo.png";
 
-function Navbar() {
+function Navbar({ cartCount }) {
   const [cartOpen, setCartOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -22,41 +22,42 @@ function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <ul className="hidden lg:flex gap-8 text-base font-medium text-gray-300">
-          <Link to="/" className="hover:text-white">
+        <ul className="hidden lg:flex gap-8 text-base font-medium">
+          <Link to="/" className="group relative w-max text-white">
             Home
+            <span className="absolute -bottom-1 left-0 w-0 h-[3px] bg-[#0D9488] rounded-full transition-all group-hover:w-full"></span>
           </Link>
-          <Link to="/Shop" className=" hover:text-white">
+
+          <Link to="/Shop" className="group relative w-max text-white">
             Shop
+            <span className="absolute -bottom-1 left-0 w-0 h-[3px] bg-[#0D9488] rounded-full transition-all group-hover:w-full"></span>
           </Link>
-          <Link to="/Blog" className=" hover:text-white">
+
+          <Link to="/Blog" className="group relative w-max text-white">
             Blog
+            <span className="absolute -bottom-1 left-0 w-0 h-[3px] bg-[#0D9488] rounded-full transition-all group-hover:w-full"></span>
           </Link>
-          <Link to="/About" className=" hover:text-white">
+
+          <Link to="/About" className="group relative w-max text-white">
             About Us
+            <span className="absolute -bottom-1 left-0 w-0 h-[3px] bg-[#0D9488] rounded-full transition-all group-hover:w-full"></span>
           </Link>
         </ul>
 
         {/* Right Side */}
         <div className="flex items-center gap-4">
-          {/* CART DROPDOWN */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setCartOpen(!cartOpen);
-                setUserOpen(false);
-              }}
-              className="p-2 rounded-md hover:bg-white/10"
-            >
-              <ShoppingCart size={20} />
-            </button>
+          <Link
+            to="/cart"
+            className="p-2 rounded-md hover:bg-white/10 relative flex items-center"
+          >
+            <ShoppingCart size={20} />
 
-            {cartOpen && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-black border border-white/10 rounded-lg shadow-lg p-4 z-50">
-                <p className="text-sm text-gray-300">Your cart is empty.</p>
-              </div>
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#0D9488] text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                {cartCount}
+              </span>
             )}
-          </div>
+          </Link>
 
           {/* ACCOUNT DROPDOWN */}
           <div className="relative">
