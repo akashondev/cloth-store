@@ -33,6 +33,9 @@ const UserSchema = new mongoose.Schema({
 
   password: { type: String, required: true },
 
+  // REQUIRED FOR EMAIL VERIFICATION
+  verified: { type: Boolean, default: false },
+
   cart: {
     type: [CartItemSchema],
     validate: {
@@ -52,7 +55,7 @@ const UserSchema = new mongoose.Schema({
   activeOrder: {
     items: [OrderItemSchema],
     total: Number,
-    eta: Date, // delivery date/time
+    eta: Date,
   },
 });
 
