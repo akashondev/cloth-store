@@ -32,7 +32,10 @@ function AnimatedRoutes({ setCartCount }) {
           <Route path="/shop" element={<Shop setCartCount={setCartCount} />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/about" element={<About />} />
-          <Route path="/cart" element={<CartPage />} />
+          <Route
+            path="/cart"
+            element={<CartPage setCartCount={setCartCount} />}
+          />
           <Route path="/verify/:token" element={<VerifyEmailPage />} />
 
           {/* Admin page needs no Navbar/Footer */}
@@ -47,32 +50,41 @@ function AnimatedRoutes({ setCartCount }) {
 function App() {
   const [cartCount, setCartCount] = useState(0);
   const location = useLocation();
-  
-  const handleAdd = () => {
-    const saved = JSON.parse(localStorage.getItem("cart"));
-    // Check if saved is actually an array
-    if (!Array.isArray(saved)) {
+
+  // Function to calculate cart count from localStorage
+  const updateCartCount = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("cart"));
+      if (!Array.isArray(saved)) {
+        setCartCount(0);
+        return;
+      }
+      const totalQty = saved.reduce((sum, item) => sum + (item.qty || 0), 0);
+      setCartCount(totalQty);
+    } catch {
       setCartCount(0);
-      return;
     }
-    const totalQty = saved.reduce((sum, item) => sum + item.qty, 0);
-    setCartCount(totalQty);
   };
 
-  // Load cart count when app start's
+  // Load cart count when app starts
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("cart"));
-    // Check if saved is actually an array
-    if (!Array.isArray(saved)) {
-      setCartCount(0);
-      return;
-    }
-    const totalQty = saved.reduce((sum, item) => sum + item.qty, 0);
-    setCartCount(totalQty);
+    updateCartCount();
+
+    // Listen for cart updates from any component
+    const handleCartUpdate = () => {
+      updateCartCount();
+    };
+
+    window.addEventListener("cartUpdated", handleCartUpdate);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("cartUpdated", handleCartUpdate);
+    };
   }, []);
 
   // Pages where Navbar + Footer should NOT show
-  const hideLayoutFor = ["/admin","/Login"];
+  const hideLayoutFor = ["/admin", "/Login"];
 
   const hideLayout = hideLayoutFor.includes(location.pathname);
 

@@ -32,8 +32,10 @@ function ProductGrid({ products, handleAdd }) {
     }
 
     saveCart(cart);
-  };
 
+    // Notify App.jsx and Navbar that cart was updated
+    window.dispatchEvent(new Event("cartUpdated"));
+  };
 
   // Validate and sanitize products prop
   useEffect(() => {
