@@ -20,6 +20,17 @@ import AdminDashboard from "./pages/AdminDashboard";
 import PaymentPage from "./pages/Payment";
 import VerifyEmailPage from "./components/VerifyEmailPage";
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname]);
+
+  return null;
+}
+
+
 function AnimatedRoutes({ setCartCount }) {
   const location = useLocation();
 
@@ -28,12 +39,13 @@ function AnimatedRoutes({ setCartCount }) {
       <ScrollTopBtn />
 
       <AnimatePresence mode="wait">
+        <ScrollToTop />
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Home setCartCount={setCartCount} />} />
           <Route path="/shop" element={<Shop setCartCount={setCartCount} />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/about" element={<About />} />
-          <Route path="/payment" element={<payment/>} />
+          <Route path="/payment" element={<payment />} />
           <Route
             path="/cart"
             element={<CartPage setCartCount={setCartCount} />}
