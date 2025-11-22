@@ -48,7 +48,7 @@ export async function VerifyEmail(email, token) {
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td align="center" style="padding: 10px 0;">
-                          <a href="${link}" style="display: inline-block; padding: 16px 40px; background-color: #667eea; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px;">Verify Email Address</a>
+                          <a href="${link}" style="display: inline-block; padding: 16px 40px; background-color: #0D9488; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px;">Verify Email Address</a>
                         </td>
                       </tr>
                     </table>

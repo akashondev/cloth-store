@@ -95,6 +95,7 @@ function ProductGrid({ products, handleAdd }) {
                       id: p._id || p.id,
                       title: p.title,
                       price: p.price,
+                      image: p.images?.[0] || "https://via.placeholder.com/300",
                     });
                     handleAdd?.(p._id || p.id);
                   }}

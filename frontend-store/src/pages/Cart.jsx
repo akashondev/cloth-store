@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ShoppingCart,
   Trash2,
@@ -8,26 +9,14 @@ import {
   CreditCard,
 } from "lucide-react";
 
-// LocalStorage Cart Helpers
+
+// Load Cart – NO SAMPLE DATA
 const loadCart = () => {
   try {
-    const saved = JSON.parse(localStorage.getItem("cart")) || [];
-    // If cart is empty, add sample data for demo
-    if (saved.length === 0) {
-      return [
-        { id: 1, title: "Classic Denim Jacket", price: 2499, qty: 1 },
-        { id: 2, title: "Cotton T-Shirt", price: 799, qty: 2 },
-        { id: 3, title: "Slim Fit Jeans", price: 1999, qty: 1 },
-      ];
-    }
-    return saved;
+    const saved = JSON.parse(localStorage.getItem("cart"));
+    return Array.isArray(saved) ? saved : [];
   } catch {
-    // Fallback sample data if localStorage fails
-    return [
-      { id: 1, title: "Classic Denim Jacket", price: 2499, qty: 1 },
-      { id: 2, title: "Cotton T-Shirt", price: 799, qty: 2 },
-      { id: 3, title: "Slim Fit Jeans", price: 1999, qty: 1 },
-    ];
+    return [];
   }
 };
 
@@ -39,6 +28,7 @@ function CartPage() {
   const [cart, setCart] = useState([]);
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+
 
   useEffect(() => {
     setCart(loadCart());
@@ -83,7 +73,7 @@ function CartPage() {
     setCouponCode("");
   };
 
-  // Calculate totals
+  // Totals
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const platformFee = 10;
   const discount = appliedCoupon
@@ -98,7 +88,7 @@ function CartPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Stylinn</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Stylin</h1>
           <div className="flex items-center gap-2 text-gray-600">
             <ShoppingCart className="w-5 h-5" />
             <span className="text-lg">Shopping Cart</span>
@@ -121,6 +111,15 @@ function CartPage() {
                       key={item.id}
                       className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:shadow-md transition-shadow"
                     >
+                      {/* Product Image */}
+                      <div className="w-20 h-20">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      </div>
+
                       <div className="flex-1">
                         <h2 className="font-semibold text-lg text-gray-800">
                           {item.title}
@@ -168,12 +167,13 @@ function CartPage() {
                 Order Summary
               </h2>
 
-              {/* Coupon Section */}
+              {/* Coupon */}
               <div className="mb-6">
                 <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                   <Tag className="w-4 h-4" />
                   Coupon Code
                 </label>
+
                 {!appliedCoupon ? (
                   <div className="flex gap-2">
                     <input
@@ -185,7 +185,7 @@ function CartPage() {
                     />
                     <button
                       onClick={applyCoupon}
-                      className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+                      className="px-4 py-2 bg-[#0D9488] text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
                     >
                       Apply
                     </button>
@@ -203,12 +203,9 @@ function CartPage() {
                     </button>
                   </div>
                 )}
-                <p className="text-xs text-gray-500 mt-2">
-                  Try: SAVE10 or FLAT50
-                </p>
               </div>
 
-              {/* Price Breakdown */}
+              {/* Breakdown */}
               <div className="space-y-3 border-t border-gray-200 pt-4">
                 <div className="flex justify-between text-gray-700">
                   <span>Subtotal</span>
@@ -234,13 +231,20 @@ function CartPage() {
               </div>
 
               {/* Payment Button */}
-              <button
-                disabled={cart.length === 0}
-                className="w-full mt-6 bg-gray-900 text-white py-4 rounded-xl font-semibold hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+              <Link
+                to="/payment"
+                state={{ cart, total }}
+                className={`w-full block mt-6 rounded-xl ${
+                  cart.length === 0
+                    ? "opacity-50 cursor-not-allowed pointer-events-none"
+                    : ""
+                }`}
               >
-                <CreditCard className="w-5 h-5" />
-                Proceed to Payment
-              </button>
+                <button className="w-full bg-[#0D9488] text-white py-4 rounded-xl font-semibold hover:bg-teal-700 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+                  <CreditCard className="w-5 h-5" />
+                  Proceed to Payment
+                </button>
+              </Link>
 
               <p className="text-xs text-gray-500 text-center mt-4">
                 Secure and encrypted checkout

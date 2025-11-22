@@ -17,6 +17,7 @@ import CartPage from "./pages/Cart";
 import Login from "./pages/Login";
 import ScrollTopBtn from "./components/ScrollTopBtn";
 import AdminDashboard from "./pages/AdminDashboard";
+import PaymentPage from "./pages/Payment";
 import VerifyEmailPage from "./components/VerifyEmailPage";
 
 function AnimatedRoutes({ setCartCount }) {
@@ -32,6 +33,7 @@ function AnimatedRoutes({ setCartCount }) {
           <Route path="/shop" element={<Shop setCartCount={setCartCount} />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/about" element={<About />} />
+          <Route path="/payment" element={<payment/>} />
           <Route
             path="/cart"
             element={<CartPage setCartCount={setCartCount} />}
@@ -51,7 +53,6 @@ function App() {
   const [cartCount, setCartCount] = useState(0);
   const location = useLocation();
 
-  // Function to calculate cart count from localStorage
   const updateCartCount = () => {
     try {
       const saved = JSON.parse(localStorage.getItem("cart"));
