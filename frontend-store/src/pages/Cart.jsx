@@ -34,6 +34,8 @@ function CartPage() {
     setCart(loadCart());
   }, []);
 
+ 
+
   const increaseQty = (id) => {
     const updated = cart.map((item) =>
       item.id === id ? { ...item, qty: item.qty + 1 } : item
@@ -58,6 +60,8 @@ function CartPage() {
     saveCart(updated);
   };
 
+  
+
   const applyCoupon = () => {
     if (couponCode.toUpperCase() === "SAVE10") {
       setAppliedCoupon({ code: "SAVE10", discount: 0.1 });
@@ -72,6 +76,7 @@ function CartPage() {
     setAppliedCoupon(null);
     setCouponCode("");
   };
+
 
   // Totals
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);

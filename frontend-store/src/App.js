@@ -18,6 +18,8 @@ import Login from "./pages/Login";
 import ScrollTopBtn from "./components/ScrollTopBtn";
 import AdminDashboard from "./pages/AdminDashboard";
 import PaymentPage from "./pages/Payment";
+import SuccessPage from "./pages/SuccessPage";
+import CancelPage from "./pages/CancelPage";
 import VerifyEmailPage from "./components/VerifyEmailPage";
 
 function ScrollToTop() {
@@ -38,21 +40,21 @@ function AnimatedRoutes({ setCartCount }) {
     <>
       <ScrollTopBtn />
 
+      <ScrollToTop />
+
       <AnimatePresence mode="wait">
-        <ScrollToTop />
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Home setCartCount={setCartCount} />} />
           <Route path="/shop" element={<Shop setCartCount={setCartCount} />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/about" element={<About />} />
-          <Route path="/payment" element={<payment />} />
-          <Route
-            path="/cart"
-            element={<CartPage setCartCount={setCartCount} />}
-          />
-          <Route path="/verify/:token" element={<VerifyEmailPage />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/cart" element={<CartPage setCartCount={setCartCount} />}/>
+         <Route path="/success" element={<SuccessPage />} />
+         <Route path="/cancel" element={<CancelPage />} />
 
-          {/* Admin page needs no Navbar/Footer */}
+
+          <Route path="/verify/:token" element={<VerifyEmailPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/Login" element={<Login />} />
         </Routes>

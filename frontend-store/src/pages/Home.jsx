@@ -66,9 +66,6 @@ function Home() {
             <div className="max-w-xl">
               {/* Left Content */}
               <div className="space-y-6">
-                <p className="text-sm md:text-base text-gray-700 font-medium tracking-wide">
-                  Trade-in-offer
-                </p>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-gray-900">
                   Super value deals
                   <br />
