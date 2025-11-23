@@ -1,13 +1,5 @@
 import mongoose from "mongoose";
 
-const CartItemSchema = new mongoose.Schema(
-  {
-    productId: { type: String, required: true },
-    qty: { type: Number, required: true, min: 1 },
-  },
-  { _id: false }
-);
-
 const OrderItemSchema = new mongoose.Schema(
   {
     productId: { type: String, required: true },
@@ -33,11 +25,15 @@ const UserSchema = new mongoose.Schema({
 
   password: { type: String, required: true },
 
-  // REQUIRED FOR EMAIL VERIFICATION
   verified: { type: Boolean, default: false },
 
   cart: {
-    type: [CartItemSchema],
+    type: [
+      {
+        productId: { type: String, required: true },
+        qty: { type: Number, required: true, min: 1 },
+      },
+    ],
     validate: {
       validator: (arr) => arr.length <= 20,
       message: "Max 20 cart items allowed",

@@ -4,6 +4,8 @@ import Stripe from "stripe";
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+
+
 // Create checkout session for multiple products
 router.post("/create-chekout-session", async (req, res) => {
   try {
