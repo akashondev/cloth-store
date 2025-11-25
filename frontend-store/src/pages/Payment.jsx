@@ -1,4 +1,4 @@
-// src/pages/PaymentPage.jsx
+
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import axios from "axios";
@@ -6,7 +6,8 @@ import axios from "axios";
 function PaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { cart } = location.state || {};
+
+  const { cart, total, discount, appliedCoupon } = location.state || {};
 
   useEffect(() => {
     if (!cart || cart.length === 0) {
@@ -26,7 +27,12 @@ function PaymentPage() {
 
         const res = await axios.post(
           "http://localhost:5000/payment/create-chekout-session",
-          { products }
+          {
+            products,
+            total, // discounted total
+            discount, // send discount
+            appliedCoupon,
+          }
         );
 
         window.location.href = res.data.url;
@@ -37,7 +43,7 @@ function PaymentPage() {
     };
 
     startPayment();
-  }, [cart, navigate]);
+  }, [cart, total, discount, appliedCoupon, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center text-lg text-gray-700">

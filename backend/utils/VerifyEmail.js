@@ -17,67 +17,74 @@ export async function VerifyEmail(email, token) {
 
   await transporter.sendMail({
     from: `"Styllin" <${process.env.EMAIL}>`,
-    to: ["akashvish802@gmail.com"],
+    to: email,
     subject: "Verify Your Email",
     html: `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f4;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet" />
+</head>
+
+<body style="margin:0; padding:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color:#f8f8f8;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding:50px 20px;">
+    <tr>
+      <td align="center">
+
+        <table width="520" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border-radius:14px; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+
           <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; max-width: 600px;">
-                <!-- Header -->
+            <td style="padding:40px 20px 20px; text-align:center;">
+              <h1 style="font-family:'Caveat', cursive; font-size:42px; margin:0; color:#0D9488;">Styllin</h1>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 30px 30px; text-align:center;">
+              <h2 style="font-size:24px; margin:0 0 18px; font-weight:600; color:#222;">Verify Your Email</h2>
+
+              <p style="font-size:15px; color:#555; line-height:1.6; margin:0 0 32px;">
+                Thanks for joining Styllin. Confirm your email to unlock your account and start exploring new arrivals, exclusive drops, and premium styles.
+              </p>
+
+              <table cellspacing="0" cellpadding="0" border="0" align="center">
                 <tr>
-                  <td style="background-color: #667eea; padding: 40px 20px; text-align: center;">
-                    <h1 style="font-family: 'Caveat', cursive; font-size: 48px; color: #ffffff; margin: 0; font-weight: 700;">Styllin</h1>
-                  </td>
-                </tr>
-                
-                <!-- Content -->
-                <tr>
-                  <td style="padding: 40px 30px; text-align: center;">
-                    <h2 style="color: #333333; font-size: 24px; margin: 0 0 20px 0;">Welcome to Styllin!</h2>
-                    <p style="color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">Thanks for signing up. We're excited to have you on board. To get started, please verify your email address by clicking the button below.</p>
-                    
-                    <!-- Button -->
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td align="center" style="padding: 10px 0;">
-                          <a href="${link}" style="display: inline-block; padding: 16px 40px; background-color: #0D9488; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px;">Verify Email Address</a>
-                        </td>
-                      </tr>
-                    </table>
-                    
-                    <!-- Divider -->
-                    <div style="height: 1px; background-color: #eeeeee; margin: 30px 0;"></div>
-                    
-                    <p style="font-size: 14px; color: #999999; margin: 0;">
-                      If the button doesn't work, copy and paste this link into your browser:<br>
-                      <a href="${link}" style="color: #667eea; word-break: break-all;">${link}</a>
-                    </p>
-                  </td>
-                </tr>
-                
-                <!-- Footer -->
-                <tr>
-                  <td style="padding: 30px; text-align: center; background-color: #f9f9f9; border-top: 1px solid #eeeeee;">
-                    <p style="color: #999999; font-size: 14px; margin: 5px 0;">This email was sent to ${email}</p>
-                    <p style="color: #999999; font-size: 14px; margin: 5px 0;">If you didn't create an account, you can safely ignore this email.</p>
-                    <p style="color: #999999; font-size: 14px; margin: 20px 0 5px 0;">&copy; 2024 Styllin. All rights reserved.</p>
+                  <td style="border-radius:8px; background:#0D9488;">
+                    <a href="${link}" style="display:inline-block; padding:14px 36px; font-size:15px; color:#ffffff; text-decoration:none; font-weight:600;">
+                      Verify Email
+                    </a>
                   </td>
                 </tr>
               </table>
+
+              <p style="font-size:13px; color:#999; margin:20px 0 8px;">Or copy and paste this link:</p>
+
+              <p style="font-size:13px; margin:0;">
+                <a href="${link}" style="color:#0D9488; text-decoration:none;">Click here to verify</a>
+              </p>
+
             </td>
           </tr>
+
+          <tr>
+            <td style="padding:28px 20px; text-align:center; background:#fafafa;">
+              <p style="font-size:13px; color:#999; margin:0 0 4px;">Sent to ${email}</p>
+              <p style="font-size:13px; color:#999; margin:0;">If you didn’t request this, simply ignore this email.</p>
+            </td>
+          </tr>
+
         </table>
-      </body>
-      </html>
-    `,
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+`,
   });
 
   return true;

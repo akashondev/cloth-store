@@ -9,7 +9,6 @@ import {
   CreditCard,
 } from "lucide-react";
 
-
 // Load Cart – NO SAMPLE DATA
 const loadCart = () => {
   try {
@@ -29,12 +28,9 @@ function CartPage() {
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
 
-
   useEffect(() => {
     setCart(loadCart());
   }, []);
-
- 
 
   const increaseQty = (id) => {
     const updated = cart.map((item) =>
@@ -60,8 +56,6 @@ function CartPage() {
     saveCart(updated);
   };
 
-  
-
   const applyCoupon = () => {
     if (couponCode.toUpperCase() === "SAVE10") {
       setAppliedCoupon({ code: "SAVE10", discount: 0.1 });
@@ -77,7 +71,6 @@ function CartPage() {
     setCouponCode("");
   };
 
-
   // Totals
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const platformFee = 10;
@@ -87,6 +80,18 @@ function CartPage() {
       : subtotal * appliedCoupon.discount
     : 0;
   const total = subtotal + platformFee - discount;
+
+  // Save full summary to localStorage anytime cart or coupon changes
+  useEffect(() => {
+    const summary = {
+      cart,
+      subtotal,
+      discount,
+      total,
+      appliedCoupon,
+    };
+    localStorage.setItem("cartSummary", JSON.stringify(summary));
+  }, [cart, appliedCoupon]);
 
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4">
@@ -141,9 +146,11 @@ function CartPage() {
                         >
                           <Minus className="w-4 h-4 text-gray-600" />
                         </button>
+
                         <span className="w-8 text-center font-semibold">
                           {item.qty}
                         </span>
+
                         <button
                           onClick={() => increaseQty(item.id)}
                           className="p-2 hover:bg-white rounded-md transition-colors"
@@ -178,6 +185,14 @@ function CartPage() {
                   <Tag className="w-4 h-4" />
                   Coupon Code
                 </label>
+
+                <div className="text-xs text-gray-500 mb-2">
+                  Try:{" "}
+                  <span className="font-semibold text-gray-700">SAVE10</span>{" "}
+                  (10 % off) or{" "}
+                  <span className="font-semibold text-gray-700">FLAT50</span>{" "}
+                  (₹50 off)
+                </div>
 
                 {!appliedCoupon ? (
                   <div className="flex gap-2">
@@ -238,7 +253,7 @@ function CartPage() {
               {/* Payment Button */}
               <Link
                 to="/payment"
-                state={{ cart, total }}
+                state={JSON.parse(localStorage.getItem("cartSummary"))}
                 className={`w-full block mt-6 rounded-xl ${
                   cart.length === 0
                     ? "opacity-50 cursor-not-allowed pointer-events-none"

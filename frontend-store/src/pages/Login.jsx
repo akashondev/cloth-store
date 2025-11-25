@@ -47,7 +47,6 @@ function Login() {
 
       // SAVE USER IN LOCALSTORAGE
       localStorage.setItem("user", JSON.stringify(data.user));
-
       navigate("/");
     }
   };
