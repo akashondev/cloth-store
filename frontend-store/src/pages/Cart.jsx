@@ -91,6 +91,7 @@ function CartPage() {
       appliedCoupon,
     };
     localStorage.setItem("cartSummary", JSON.stringify(summary));
+    console.log("subtoatal :",total)
   }, [cart, appliedCoupon]);
 
   return (

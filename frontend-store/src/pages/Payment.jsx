@@ -6,7 +6,17 @@ import axios from "axios";
 function PaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { cart } = location.state || {};
+
+  const loadCart = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("cart"));
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const cart = loadCart();
 
   useEffect(() => {
     if (!cart || cart.length === 0) {
@@ -16,13 +26,38 @@ function PaymentPage() {
 
     const startPayment = async () => {
       try {
-        const products = cart.map((item) => ({
-          _id: item.id,
-          title: item.title,
-          price: item.price,
-          images: [item.image],
-          qty: item.qty,
-        }));
+        const summary = JSON.parse(localStorage.getItem("cartSummary"));
+
+        if (!summary || !summary.cart) {
+          navigate("/");
+          return;
+        }
+
+        const { cart, subtotal, discount } = summary;
+
+        let products;
+
+        if (discount > 0 && subtotal > 0) {
+          // Apply proportional discount
+          const discountRatio = (subtotal - discount) / subtotal;
+
+          products = cart.map((item) => ({
+            _id: item.id,
+            title: item.title,
+            price: Math.round(item.price * discountRatio),
+            images: [item.image],
+            qty: item.qty,
+          }));
+        } else {
+          // No coupon → use original prices
+          products = cart.map((item) => ({
+            _id: item.id,
+            title: item.title,
+            price: item.price,
+            images: [item.image],
+            qty: item.qty,
+          }));
+        }
 
         const res = await axios.post(
           "http://localhost:5000/payment/create-chekout-session",

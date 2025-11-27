@@ -2,16 +2,36 @@ import React, { useEffect, useState } from "react";
 import ProductGrid from "../components/ProductGrid";
 import hero4 from "../assets/hero4.png";
 import { motion } from "framer-motion";
+import Lenis from "@studio-freight/lenis";
 
 function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cartCount, setCartCount] = useState(0);
 
-  const handleAdd = (id) => {
+  const handleAdd = () => {
     setCartCount((prev) => prev + 1);
   };
 
+  // LENIS Smooth Scroll Setup
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      smooth: true,
+      smoothTouch: false,
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => lenis.destroy();
+  }, []);
+
+  // Fetch Products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -27,13 +47,10 @@ function Home() {
     fetchProducts();
   }, []);
 
-  // Framer Motion variants
+  // Motion Variants
   const container = {
     hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.15 },
-    },
+    show: { opacity: 1, transition: { staggerChildren: 0.15 } },
   };
 
   const word = {
@@ -46,6 +63,7 @@ function Home() {
     },
   };
 
+  // Loading Skeleton
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -73,7 +91,7 @@ function Home() {
       transition={{ duration: 0.2 }}
     >
       <div className="min-h-screen bg-gray-100">
-        {/* HERO SECTION */}
+        {/* HERO */}
         <section
           className="relative bg-no-repeat bg-cover bg-[top_25%_right_0] overflow-hidden min-h-[90vh] w-full px-20 flex items-center"
           style={{ backgroundImage: `url(${hero4})` }}
@@ -108,7 +126,6 @@ function Home() {
                 ))}
               </motion.h1>
 
-              {/* Subtext */}
               <motion.p
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -118,7 +135,6 @@ function Home() {
                 Save more with coupons & up to 70% off!
               </motion.p>
 
-              {/* Button */}
               <motion.button
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -131,6 +147,7 @@ function Home() {
           </div>
         </section>
 
+        {/* PRODUCT GRID */}
         <ProductGrid products={products} handleAdd={handleAdd} />
       </div>
     </motion.div>
