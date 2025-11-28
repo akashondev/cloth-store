@@ -24,52 +24,63 @@ function PaymentPage() {
       return;
     }
 
-    const startPayment = async () => {
-      try {
-        const summary = JSON.parse(localStorage.getItem("cartSummary"));
+   const startPayment = async () => {
+     try {
+       const summary = JSON.parse(localStorage.getItem("cartSummary"));
 
-        if (!summary || !summary.cart) {
-          navigate("/");
-          return;
-        }
+       if (!summary || !summary.cart) {
+         navigate("/");
+         return;
+       }
 
-        const { cart, subtotal, discount } = summary;
+       const { cart, subtotal, discount, platformFee } = summary;
 
-        let products;
+       // Ensure platformFee exists (fallback 10)
+       const fee = platformFee ?? 10;
 
-        if (discount > 0 && subtotal > 0) {
-          // Apply proportional discount
-          const discountRatio = (subtotal - discount) / subtotal;
+       let products;
 
-          products = cart.map((item) => ({
-            _id: item.id,
-            title: item.title,
-            price: Math.round(item.price * discountRatio),
-            images: [item.image],
-            qty: item.qty,
-          }));
-        } else {
-          // No coupon → use original prices
-          products = cart.map((item) => ({
-            _id: item.id,
-            title: item.title,
-            price: item.price,
-            images: [item.image],
-            qty: item.qty,
-          }));
-        }
+       if (discount > 0 && subtotal > 0) {
+         // proportional discount on product prices ONLY
+         const discountRatio = (subtotal - discount) / subtotal;
 
-        const res = await axios.post(
-          "http://localhost:5000/payment/create-chekout-session",
-          { products }
-        );
+         products = cart.map((item) => ({
+           _id: item.id,
+           title: item.title,
+           price: Math.round(item.price * discountRatio),
+           images: [item.image],
+           qty: item.qty,
+         }));
+       } else {
+         products = cart.map((item) => ({
+           _id: item.id,
+           title: item.title,
+           price: item.price,
+           images: [item.image],
+           qty: item.qty,
+         }));
+       }
 
-        window.location.href = res.data.url;
-      } catch (error) {
-        console.error(error);
-        navigate("/cancel");
-      }
-    };
+       // ADD platform fee as separate product
+       products.push({
+         _id: "platform_fee",
+         title: "Platform Fee",
+         price: fee,
+         images: [],
+         qty: 1,
+       });
+       
+       const res = await axios.post(
+         "http://localhost:5000/payment/create-chekout-session",
+         { products }
+       );
+
+       window.location.href = res.data.url;
+     } catch (error) {
+       console.error(error);
+       navigate("/cancel");
+     }
+   };
 
     startPayment();
   }, [cart, navigate]);

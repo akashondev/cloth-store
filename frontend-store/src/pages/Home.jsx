@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import ProductGrid from "../components/ProductGrid";
 import hero4 from "../assets/hero4.png";
 import { motion } from "framer-motion";
-import Lenis from "@studio-freight/lenis";
 
 function Home() {
   const [products, setProducts] = useState([]);
@@ -12,24 +11,6 @@ function Home() {
   const handleAdd = () => {
     setCartCount((prev) => prev + 1);
   };
-
-  // LENIS Smooth Scroll Setup
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      smooth: true,
-      smoothTouch: false,
-    });
-
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    return () => lenis.destroy();
-  }, []);
 
   // Fetch Products
   useEffect(() => {
