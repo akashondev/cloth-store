@@ -1,10 +1,34 @@
-// src/pages/SuccessPage.jsx
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 function SuccessPage() {
   useEffect(() => {
-    localStorage.removeItem("cart");
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.id) return;
+    // console.log("Placing order for user:", user.id);
+
+    const cart = JSON.parse(localStorage.getItem("cart"));
+    if (!cart || cart.length === 0) return;
+
+    const payload = {
+      items: cart.map((item) => ({
+        productId: item?.id,
+        qty: item.qty,
+        priceAtPurchase: item.price, // must exist in cart
+      })),
+      total: cart.reduce((acc, item) => acc + item.price * item.qty, 0),
+      eta: new Date(Date.now() + 45 * 60 * 1000), // 45 min
+    };
+    console.log("cart items :", cart);
+
+    fetch(`http://localhost:5000/users/${user.id}/place-order`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => res.json())
+      .then(() => localStorage.removeItem("cart"))
+      .catch((err) => console.error(err));
   }, []);
 
   return (

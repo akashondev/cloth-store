@@ -7,8 +7,8 @@ function Navbar({ cartCount }) {
   const [cartOpen, setCartOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   const user = JSON.parse(localStorage.getItem("user"));
+
 
   return (
     <nav className="bg-black text-white sticky top-0 z-50">
@@ -20,7 +20,10 @@ function Navbar({ cartCount }) {
             alt="Styllin Logo"
           />
           <span className="text-2xl font-semibold logo-font">Styllin</span>
+          
         </Link>
+
+      
 
         <ul className="hidden lg:flex gap-8 text-base font-medium">
           <Link to="/" className="group relative w-max text-white">

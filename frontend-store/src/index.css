@@ -17,6 +17,18 @@ body {
   overscroll-behavior: none;
 }
 
+@font-face {
+  font-family: 'Pricedown';
+  src: url('/src/assets/pricedown.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.price-down {
+  font-family: 'Pricedown', sans-serif;
+}
+
+
 .logo-font {
   font-family: "Caveat", "GFS Didot", serif;
 }
