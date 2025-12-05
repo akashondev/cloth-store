@@ -83,7 +83,7 @@ function Navbar({ cartCount }) {
                   <Link className="block px-3 py-2 hover:bg-white/10" to="#">
                     My Account
                   </Link>
-                  <Link className="block px-3 py-2 hover:bg-white/10" to="#">
+                  <Link className="block px-3 py-2 hover:bg-white/10" to="/Orders">
                     Orders
                   </Link>
                   <Link className="block px-3 py-2 hover:bg-white/10" to="#">

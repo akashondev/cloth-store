@@ -57,6 +57,8 @@ function CartPage() {
     const updated = cart.filter((item) => item.id !== id);
     setCart(updated);
     saveCart(updated);
+    window.dispatchEvent(new Event("cartUpdated"));
+
   };
 
   const applyCoupon = () => {

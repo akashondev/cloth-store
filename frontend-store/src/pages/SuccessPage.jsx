@@ -9,17 +9,22 @@ function SuccessPage() {
 
     const cart = JSON.parse(localStorage.getItem("cart"));
     if (!cart || cart.length === 0) return;
-
+    console.log("Cart contents:", cart);
+ 
     const payload = {
       items: cart.map((item) => ({
         productId: item?.id,
         qty: item.qty,
         priceAtPurchase: item.price, // must exist in cart
+        title: item.title || item.name, // ✅ Sends title to backend
+        image: item.image || item.img,
       })),
+      
       total: cart.reduce((acc, item) => acc + item.price * item.qty, 0),
       eta: new Date(Date.now() + 45 * 60 * 1000), // 45 min
     };
-    console.log("cart items :", cart);
+    // console.log("cart items :", cart);
+    console.log("Order payload:", payload);
 
     fetch(`http://localhost:5000/users/${user.id}/place-order`, {
       method: "POST",

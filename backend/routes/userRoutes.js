@@ -109,57 +109,63 @@ router.delete("/:id", async (req, res) => {
   res.json({ message: "Account deleted" });
 });
 
-// /* PLACE ORDER */
-// router.post("/:id/place-order", async (req, res) => {
-//   const { items, total, eta } = req.body;
 
-//   const user = await User.findById(req.params.id);
-//   if (!user) return res.status(404).json({ error: "User not found" });
+// Backend route - Add this to your user routes file
 
-//   user.activeOrder = { items, total, eta };
-
-//   const order = { items, total, placedAt: new Date() };
-
-//   if (user.orderHistory.length >= 5) {
-//     user.orderHistory.shift();
-//   }
-//   user.orderHistory.push(order);
-
-//   await user.save();
-//   res.json(user.activeOrder);
-// });
-
-/* PLACE ORDER */
 router.post("/:id/place-order", async (req, res) => {
   try {
+    const { id } = req.params;
     const { items, total, eta } = req.body;
 
-    // Validate payload
+    // Validate required fields
     if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: "Items required" });
+      return res.status(400).json({ error: "Items array is required" });
     }
 
+    if (!total) {
+      return res.status(400).json({ error: "Total is required" });
+    }
+
+    // Validate each item has required fields
     for (const item of items) {
-      if (!item.productId || !item.qty || item.priceAtPurchase == null) {
-        return res.status(400).json({ error: "Invalid order item structure" });
+      if (!item.productId || !item.qty || !item.priceAtPurchase || !item.title || !item.image) {
+        return res.status(400).json({ 
+          error: "Each item must have productId, qty, priceAtPurchase, title, and image" 
+        });
       }
     }
 
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
-    user.activeOrder = { items, total, eta };
-
-    const order = { items, total, placedAt: new Date() };
-
-    if (user.orderHistory.length >= 5) user.orderHistory.shift();
-    user.orderHistory.push(order);
+    // Set active order
+    user.activeOrder = {
+      items: items.map(item => ({
+        productId: item.productId,
+        qty: item.qty,
+        priceAtPurchase: item.priceAtPurchase,
+        title: item.title,
+        image: item.image,
+      })),
+      total,
+      eta: eta || new Date(Date.now() + 45 * 60 * 1000),
+    };
 
     await user.save();
 
-    res.json(user.activeOrder);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.json({ 
+      success: true, 
+      message: "Order placed successfully",
+      activeOrder: user.activeOrder 
+    });
+  } catch (error) {
+    console.error("Place order error:", error);
+    res.status(500).json({ 
+      error: "Failed to place order", 
+      details: error.message 
+    });
   }
 });
 

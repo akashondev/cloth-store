@@ -22,6 +22,7 @@ import SuccessPage from "./pages/SuccessPage";
 import CancelPage from "./pages/CancelPage";
 import SmoothScroll from "./components/SmoothScroll";
 import VerifyEmailPage from "./components/VerifyEmailPage";
+import Orders  from "./pages/Orders";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -53,6 +54,7 @@ function AnimatedRoutes({ setCartCount }) {
           <Route path="/cart" element={<CartPage setCartCount={setCartCount} />}/>
          <Route path="/success" element={<SuccessPage />} />
          <Route path="/cancel" element={<CancelPage />} />
+         <Route path="/orders" element={<Orders />} />
 
 
           <Route path="/verify/:token" element={<VerifyEmailPage />} />

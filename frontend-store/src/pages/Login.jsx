@@ -5,6 +5,7 @@ import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 function Login() {
   const [mode, setMode] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -143,18 +144,34 @@ function Login() {
       </div>
 
       {/* Right Hero Image */}
-      <div className="hidden lg:flex lg:w-1/2 h-screen items-center justify-center bg-[#CDC8C4] relative">
-        {/* Realistic ground shadow - matches studio photography */}
+      <div className="hidden lg:flex lg:w-1/2 h-screen items-center justify-center bg-[#CDC8C4] relative overflow-hidden">
+        {/* Loading skeleton */}
+        {!imageLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-[65%] h-[70%] animate-pulse rounded-lg"></div>
+          </div>
+        )}
+
+        {/* Realistic ground shadow */}
         <div
-          className="absolute bottom-[8%] w-[65%] h-[100px] 
-                  bg-gradient-radial from-black/30 via-black/15 to-transparent 
-                  blur-[60px] rounded-[100%] opacity-80"
+          className={`absolute bottom-[6%] w-[70%] h-[95px] bg-[radial-gradient(ellipse_at_center,_rgba(0,0,0,0.35)_0%,_rgba(0,0,0,0.20)_35%,_rgba(0,0,0,0.10)_60%,_rgba(0,0,0,0)_100%)] blur-[50px] opacity-80 rounded-full
+          transition-opacity duration-1000
+          ${imageLoaded ? "opacity-80" : "opacity-0"}`}
         ></div>
+
         {/* Model PNG */}
         <img
           src={heroImg}
           alt="Hero"
-          className="relative z-10 max-w-full max-h-full object-contain drop-shadow-2xl"
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageLoaded(true)}
+          className={`relative z-10 max-w-full max-h-full object-contain drop-shadow-2xl
+                     transition-all duration-1000 ease-out
+                     ${
+                       imageLoaded
+                         ? "opacity-100 scale-100"
+                         : "opacity-0 scale-95"
+                     }`}
         />
       </div>
 

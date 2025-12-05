@@ -5,6 +5,8 @@ const OrderItemSchema = new mongoose.Schema(
     productId: { type: String, required: true },
     qty: { type: Number, required: true },
     priceAtPurchase: { type: Number, required: true },
+    title: { type: String, required: true },
+    image: { type: String, required: true },
   },
   { _id: false }
 );
@@ -36,7 +38,15 @@ const UserSchema = new mongoose.Schema({
   },
 
   activeOrder: {
-    items: [OrderItemSchema],
+    items: [
+      {
+        productId: { type: String, required: true },
+        qty: { type: Number, required: true },
+        priceAtPurchase: { type: Number, required: true },
+        title: { type: String, required: true },
+        image: { type: String, required: true },
+      },
+    ],
     total: Number,
     eta: Date,
   },
