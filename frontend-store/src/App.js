@@ -20,6 +20,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import PaymentPage from "./pages/Payment";
 import SuccessPage from "./pages/SuccessPage";
 import CancelPage from "./pages/CancelPage";
+import SmoothScroll from "./components/SmoothScroll";
 import VerifyEmailPage from "./components/VerifyEmailPage";
 
 function ScrollToTop() {
@@ -120,6 +121,7 @@ export default function WrappedApp() {
   return (
     <Router>
       <App />
+      <SmoothScroll />
     </Router>
   );
 }

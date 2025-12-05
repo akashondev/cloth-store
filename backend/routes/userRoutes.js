@@ -14,19 +14,15 @@ router.post("/register", async (req, res) => {
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ error: "User already exists" });
 
-    // Generate verification token
     const token = generateVerificationToken(email);
 
-    // Try sending email FIRST
     const emailSent = await VerifyEmail(email, token);
-
     if (!emailSent)
       return res
         .status(500)
         .json({ error: "Failed to send verification email" });
 
-    // Only THEN create user
-    const user = await User.create({
+    await User.create({
       name,
       email,
       password,
@@ -69,13 +65,11 @@ router.get("/verify/:token", async (req, res) => {
   }
 });
 
-
-/* LOGIN – BLOCK IF NOT VERIFIED */
+/* LOGIN (blocked if email not verified) */
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
-
   if (!user || user.password !== password)
     return res.status(400).json({ error: "Invalid credentials" });
 
@@ -85,7 +79,7 @@ router.post("/login", async (req, res) => {
   res.json({ message: "Login successful", userId: user._id });
 });
 
-/* GET USER DETAILS */
+/* GET USER INFO */
 router.get("/:id", async (req, res) => {
   const user = await User.findById(req.params.id).select("-password");
   res.json(user);
@@ -115,31 +109,58 @@ router.delete("/:id", async (req, res) => {
   res.json({ message: "Account deleted" });
 });
 
-/* UPDATE CART */
-router.put("/:id/cart", async (req, res) => {
-  const { cart } = req.body;
+// /* PLACE ORDER */
+// router.post("/:id/place-order", async (req, res) => {
+//   const { items, total, eta } = req.body;
 
-  try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { cart },
-      { new: true, runValidators: true }
-    );
-    res.json(user.cart);
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
+//   const user = await User.findById(req.params.id);
+//   if (!user) return res.status(404).json({ error: "User not found" });
+
+//   user.activeOrder = { items, total, eta };
+
+//   const order = { items, total, placedAt: new Date() };
+
+//   if (user.orderHistory.length >= 5) {
+//     user.orderHistory.shift();
+//   }
+//   user.orderHistory.push(order);
+
+//   await user.save();
+//   res.json(user.activeOrder);
+// });
 
 /* PLACE ORDER */
 router.post("/:id/place-order", async (req, res) => {
-  const { items, total, eta } = req.body;
+  try {
+    const { items, total, eta } = req.body;
 
-  const user = await User.findById(req.params.id);
-  user.activeOrder = { items, total, eta };
-  await user.save();
+    // Validate payload
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: "Items required" });
+    }
 
-  res.json(user.activeOrder);
+    for (const item of items) {
+      if (!item.productId || !item.qty || item.priceAtPurchase == null) {
+        return res.status(400).json({ error: "Invalid order item structure" });
+      }
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    user.activeOrder = { items, total, eta };
+
+    const order = { items, total, placedAt: new Date() };
+
+    if (user.orderHistory.length >= 5) user.orderHistory.shift();
+    user.orderHistory.push(order);
+
+    await user.save();
+
+    res.json(user.activeOrder);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* ORDER DELIVERED */

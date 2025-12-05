@@ -6,7 +6,17 @@ import axios from "axios";
 function PaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { cart } = location.state || {};
+
+  const loadCart = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("cart"));
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const cart = loadCart();
 
   useEffect(() => {
     if (!cart || cart.length === 0) {
@@ -14,27 +24,63 @@ function PaymentPage() {
       return;
     }
 
-    const startPayment = async () => {
-      try {
-        const products = cart.map((item) => ({
-          _id: item.id,
-          title: item.title,
-          price: item.price,
-          images: [item.image],
-          qty: item.qty,
-        }));
+   const startPayment = async () => {
+     try {
+       const summary = JSON.parse(localStorage.getItem("cartSummary"));
 
-        const res = await axios.post(
-          "http://localhost:5000/payment/create-chekout-session",
-          { products }
-        );
+       if (!summary || !summary.cart) {
+         navigate("/");
+         return;
+       }
 
-        window.location.href = res.data.url;
-      } catch (error) {
-        console.error(error);
-        navigate("/cancel");
-      }
-    };
+       const { cart, subtotal, discount, platformFee } = summary;
+
+       // Ensure platformFee exists (fallback 10)
+       const fee = platformFee ?? 10;
+
+       let products;
+
+       if (discount > 0 && subtotal > 0) {
+         // proportional discount on product prices ONLY
+         const discountRatio = (subtotal - discount) / subtotal;
+
+         products = cart.map((item) => ({
+           _id: item.id,
+           title: item.title,
+           price: Math.round(item.price * discountRatio),
+           images: [item.image],
+           qty: item.qty,
+         }));
+       } else {
+         products = cart.map((item) => ({
+           _id: item.id,
+           title: item.title,
+           price: item.price,
+           images: [item.image],
+           qty: item.qty,
+         }));
+       }
+
+       // ADD platform fee as separate product
+       products.push({
+         _id: "platform_fee",
+         title: "Platform Fee",
+         price: fee,
+         images: [],
+         qty: 1,
+       });
+       
+       const res = await axios.post(
+         "http://localhost:5000/payment/create-chekout-session",
+         { products }
+       );
+
+       window.location.href = res.data.url;
+     } catch (error) {
+       console.error(error);
+       navigate("/cancel");
+     }
+   };
 
     startPayment();
   }, [cart, navigate]);

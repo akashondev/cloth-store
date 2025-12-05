@@ -21,7 +21,10 @@ const loadCart = () => {
 
 const saveCart = (cart) => {
   localStorage.setItem("cart", JSON.stringify(cart));
+  console.log("cart data :", cart);
 };
+
+
 
 function CartPage() {
   const [cart, setCart] = useState([]);

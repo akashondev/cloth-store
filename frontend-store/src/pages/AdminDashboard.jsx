@@ -16,6 +16,7 @@ import {
   LogOut,
 } from "lucide-react";
 
+
 export default function AdminDashboard() {
   const [products, setProducts] = useState([]);
   const [form, setForm] = useState({
@@ -34,9 +35,17 @@ export default function AdminDashboard() {
     categories: 0,
   });
 
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) setUser(JSON.parse(stored));
+  }, []);
+
+
   const fetchProducts = async () => {
     try {
-      const res = await fetch("http://localhost:5000/products/product");
+      const res = await fetch("http://localhost:5000/products");
       const data = await res.json();
       setProducts(data);
 
@@ -360,6 +369,37 @@ export default function AdminDashboard() {
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   {navItems.find((n) => n.id === activeNav)?.label}
                 </h3>
+                {/* USER INFO FROM LOCALSTORAGE */}
+                {user && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-4">
+                      User Details
+                    </h4>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+                      {(Array.isArray(user) ? user : [user]).map((u, index) => (
+                        <div
+                          key={index}
+                          className="p-6 rounded-xl shadow-md text-left bg-[#393D7E]"
+                        >
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                              <user size={24} className="text-white" />
+                            </div>
+                            <div>
+                              <p className="text-white font-bold text-lg">
+                                {u.name}
+                              </p>
+                              <p className="text-white text-opacity-80 text-sm">
+                                ID: {u.id}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <p className="text-gray-500">
                   This section is coming soon. Switch to Products to manage your
                   inventory.

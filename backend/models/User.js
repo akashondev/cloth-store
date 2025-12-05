@@ -27,19 +27,6 @@ const UserSchema = new mongoose.Schema({
 
   verified: { type: Boolean, default: false },
 
-  cart: {
-    type: [
-      {
-        productId: { type: String, required: true },
-        qty: { type: Number, required: true, min: 1 },
-      },
-    ],
-    validate: {
-      validator: (arr) => arr.length <= 20,
-      message: "Max 20 cart items allowed",
-    },
-  },
-
   orderHistory: {
     type: [OrderSchema],
     validate: {

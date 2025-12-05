@@ -13,7 +13,21 @@ body {
     'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+   height: 100%;
+  overscroll-behavior: none;
 }
+
+@font-face {
+  font-family: 'Pricedown';
+  src: url('/src/assets/pricedown.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.price-down {
+  font-family: 'Pricedown', sans-serif;
+}
+
 
 .logo-font {
   font-family: "Caveat", "GFS Didot", serif;
@@ -22,3 +36,4 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+
