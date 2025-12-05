@@ -17,6 +17,7 @@ import CartPage from "./pages/Cart";
 import Login from "./pages/Login";
 import ScrollTopBtn from "./components/ScrollTopBtn";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminPanel from "./components/AdminPanel";
 import PaymentPage from "./pages/Payment";
 import SuccessPage from "./pages/SuccessPage";
 import CancelPage from "./pages/CancelPage";
@@ -54,7 +55,8 @@ function AnimatedRoutes({ setCartCount }) {
           <Route path="/cart" element={<CartPage setCartCount={setCartCount} />}/>
          <Route path="/success" element={<SuccessPage />} />
          <Route path="/cancel" element={<CancelPage />} />
-         <Route path="/orders" element={<Orders />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="adminpanel" element={<adminpanel/>}/>
 
 
           <Route path="/verify/:token" element={<VerifyEmailPage />} />

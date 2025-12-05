@@ -169,6 +169,19 @@ router.post("/:id/place-order", async (req, res) => {
   }
 });
 
+// GET ALL ACTIVE ORDERS (ADMIN)
+router.get("/orders/active", async (req, res) => {
+  try {
+    const users = await User.find({ activeOrder: { $ne: null } })
+      .select("name email activeOrder");
+
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 /* ORDER DELIVERED */
 router.post("/:id/order-delivered", async (req, res) => {
   const user = await User.findById(req.params.id);
