@@ -6,11 +6,20 @@ import { motion } from "framer-motion";
 function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [cartCount, setCartCount] = useState(0);
 
   const handleAdd = () => {
     setCartCount((prev) => prev + 1);
   };
+
+  // Page Load Animation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPageLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Fetch Products
   useEffect(() => {
@@ -65,73 +74,116 @@ function Home() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
-    >
-      <div className="min-h-screen bg-gray-100">
-        {/* HERO */}
-        <section
-          className="relative bg-no-repeat bg-cover bg-[top_25%_right_0] overflow-hidden min-h-[90vh] w-full px-20 flex items-center"
-          style={{ backgroundImage: `url(${hero4})` }}
+    <>
+      {/* Page Loading Screen */}
+      <motion.div
+        initial={{ opacity: 1 }}
+        animate={{ opacity: pageLoading ? 1 : 0 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+        className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+        style={{ display: pageLoading ? "flex" : "none" }}
+      >
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="text-center"
         >
-          <div className="relative z-10 max-w-7xl mx-auto px-6 py-16 md:py-24 w-full">
-            <div className="max-w-xl space-y-6">
-              {/* Animated Heading */}
-              <motion.h1
-                variants={container}
-                initial="hidden"
-                animate="show"
-                className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-gray-900"
-              >
-                {["Super", "value", "deals"].map((w, i) => (
-                  <motion.span
-                    key={i}
-                    variants={word}
-                    className="inline-block mr-2"
-                  >
-                    {w}
-                  </motion.span>
-                ))}
-                <br />
-                {["On", "all", "products"].map((w, i) => (
-                  <motion.span
-                    key={i}
-                    variants={word}
-                    className="inline-block mr-2 text-teal-600"
-                  >
-                    {w}
-                  </motion.span>
-                ))}
-              </motion.h1>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            className="w-16 h-16 border-4 border-teal-600 border-t-transparent rounded-full mx-auto mb-4"
+          ></motion.div>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            className="text-teal-700 text-xl font-semibold"
+          >
+            Loading...
+          </motion.p>
+        </motion.div>
+      </motion.div>
 
-              <motion.p
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1, duration: 0.4 }}
-                className="text-lg md:text-xl text-gray-700"
-              >
-                Save more with coupons & up to 70% off!
-              </motion.p>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: pageLoading ? 0 : 1 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
+        <div className="min-h-screen bg-gray-100 overflow-x-hidden">
+          {/* HERO */}
+          <motion.section
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{
+              opacity: pageLoading ? 0 : 1,
+              scale: pageLoading ? 1.1 : 1,
+            }}
+            transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+            className="relative bg-no-repeat bg-cover bg-[top_25%_right_0] overflow-hidden min-h-[90vh] w-full px-20 flex items-center"
+            style={{ backgroundImage: `url(${hero4})` }}
+          >
+            <div className="relative z-10 max-w-7xl mx-auto px-6 py-16 md:py-24 w-full">
+              <div className="max-w-xl space-y-6">
+                {/* Animated Heading */}
+                <motion.h1
+                  variants={container}
+                  initial="hidden"
+                  animate={pageLoading ? "hidden" : "show"}
+                  className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-gray-900"
+                >
+                  {["Super", "value", "deals"].map((w, i) => (
+                    <motion.span
+                      key={i}
+                      variants={word}
+                      className="inline-block mr-2"
+                    >
+                      {w}
+                    </motion.span>
+                  ))}
+                  <br />
+                  {["On", "all", "products"].map((w, i) => (
+                    <motion.span
+                      key={i}
+                      variants={word}
+                      className="inline-block mr-2 text-teal-600"
+                    >
+                      {w}
+                    </motion.span>
+                  ))}
+                </motion.h1>
 
-              <motion.button
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2, duration: 0.4 }}
-                className="bg-amber-200 hover:bg-amber-300 text-teal-700 font-semibold px-8 py-4 rounded-full transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
-              >
-                Shop Now
-              </motion.button>
+                <motion.p
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{
+                    opacity: pageLoading ? 0 : 1,
+                    y: pageLoading ? 15 : 0,
+                  }}
+                  transition={{ delay: 1.5, duration: 0.4 }}
+                  className="text-lg md:text-xl text-gray-700"
+                >
+                  Save more with coupons & up to 70% off!
+                </motion.p>
+
+                <motion.button
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{
+                    opacity: pageLoading ? 0 : 1,
+                    y: pageLoading ? 15 : 0,
+                  }}
+                  transition={{ delay: 1.7, duration: 0.4 }}
+                  className="bg-amber-200 hover:bg-amber-300 text-teal-700 font-semibold px-8 py-4 rounded-full transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                >
+                  Shop Now
+                </motion.button>
+              </div>
             </div>
-          </div>
-        </section>
+          </motion.section>
 
-        {/* PRODUCT GRID */}
-        <ProductGrid products={products} handleAdd={handleAdd} />
-      </div>
-    </motion.div>
+          {/* PRODUCT GRID */}
+          <ProductGrid products={products} handleAdd={handleAdd} />
+        </div>
+      </motion.div>
+    </>
   );
 }
 

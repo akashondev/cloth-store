@@ -67,51 +67,80 @@ router.get("/verify/:token", async (req, res) => {
 
 /* LOGIN (blocked if email not verified) */
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
-  if (!user || user.password !== password)
-    return res.status(400).json({ error: "Invalid credentials" });
+    const user = await User.findOne({ email });
+    if (!user || user.password !== password)
+      return res.status(400).json({ error: "Invalid credentials" });
 
-  if (!user.verified)
-    return res.status(400).json({ error: "Please verify your email first." });
+    if (!user.verified)
+      return res.status(400).json({ error: "Please verify your email first." });
 
-  res.json({ message: "Login successful", userId: user._id });
+    res.json({
+      message: "Login successful",
+      userId: user._id,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* GET USER INFO */
 router.get("/:id", async (req, res) => {
-  const user = await User.findById(req.params.id).select("-password");
-  res.json(user);
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* UPDATE NAME */
 router.put("/:id/name", async (req, res) => {
-  const { name } = req.body;
-  const user = await User.findByIdAndUpdate(
-    req.params.id,
-    { name },
-    { new: true }
-  );
-  res.json(user);
+  try {
+    const { name } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { name },
+      { new: true }
+    ).select("-password");
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* UPDATE PASSWORD */
 router.put("/:id/password", async (req, res) => {
-  const { password } = req.body;
-  await User.findByIdAndUpdate(req.params.id, { password });
-  res.json({ message: "Password updated" });
+  try {
+    const { password } = req.body;
+    await User.findByIdAndUpdate(req.params.id, { password });
+    res.json({ message: "Password updated" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* DELETE ACCOUNT */
 router.delete("/:id", async (req, res) => {
-  await User.findByIdAndDelete(req.params.id);
-  res.json({ message: "Account deleted" });
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: "Account deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-
-// Backend route - Add this to your user routes file
-
+/* PLACE ORDER */
 router.post("/:id/place-order", async (req, res) => {
   try {
     const { id } = req.params;
@@ -128,9 +157,16 @@ router.post("/:id/place-order", async (req, res) => {
 
     // Validate each item has required fields
     for (const item of items) {
-      if (!item.productId || !item.qty || !item.priceAtPurchase || !item.title || !item.image) {
-        return res.status(400).json({ 
-          error: "Each item must have productId, qty, priceAtPurchase, title, and image" 
+      if (
+        !item.productId ||
+        !item.qty ||
+        !item.priceAtPurchase ||
+        !item.title ||
+        !item.image
+      ) {
+        return res.status(400).json({
+          error:
+            "Each item must have productId, qty, priceAtPurchase, title, and image",
         });
       }
     }
@@ -142,7 +178,7 @@ router.post("/:id/place-order", async (req, res) => {
 
     // Set active order
     user.activeOrder = {
-      items: items.map(item => ({
+      items: items.map((item) => ({
         productId: item.productId,
         qty: item.qty,
         priceAtPurchase: item.priceAtPurchase,
@@ -150,30 +186,31 @@ router.post("/:id/place-order", async (req, res) => {
         image: item.image,
       })),
       total,
-      eta: eta || new Date(Date.now() + 45 * 60 * 1000),
+      eta: eta || new Date(Date.now() + 45 * 60 * 1000), // Default 45 min
     };
 
     await user.save();
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: "Order placed successfully",
-      activeOrder: user.activeOrder 
+      activeOrder: user.activeOrder,
     });
   } catch (error) {
     console.error("Place order error:", error);
-    res.status(500).json({ 
-      error: "Failed to place order", 
-      details: error.message 
+    res.status(500).json({
+      error: "Failed to place order",
+      details: error.message,
     });
   }
 });
 
-// GET ALL ACTIVE ORDERS (ADMIN)
+/* GET ALL ACTIVE ORDERS (ADMIN) */
 router.get("/orders/active", async (req, res) => {
   try {
-    const users = await User.find({ activeOrder: { $ne: null } })
-      .select("name email activeOrder");
+    const users = await User.find({ activeOrder: { $ne: null } }).select(
+      "name email activeOrder"
+    );
 
     res.json(users);
   } catch (err) {
@@ -181,21 +218,37 @@ router.get("/orders/active", async (req, res) => {
   }
 });
 
-
 /* ORDER DELIVERED */
 router.post("/:id/order-delivered", async (req, res) => {
-  const user = await User.findById(req.params.id);
+  try {
+    const user = await User.findById(req.params.id);
 
-  if (!user.activeOrder)
-    return res.status(400).json({ error: "No active order" });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
-  user.orderHistory.unshift(user.activeOrder);
-  user.orderHistory = user.orderHistory.slice(0, 5);
-  user.activeOrder = null;
+    if (!user.activeOrder) {
+      return res.status(400).json({ error: "No active order" });
+    }
 
-  await user.save();
+    // Move active order to history
+    if (!user.orderHistory) {
+      user.orderHistory = [];
+    }
 
-  res.json({ message: "Order moved to history" });
+    user.orderHistory.unshift(user.activeOrder);
+    user.orderHistory = user.orderHistory.slice(0, 5); // Keep only last 5
+    user.activeOrder = null;
+
+    await user.save();
+
+    res.json({
+      message: "Order moved to history",
+      success: true,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;
