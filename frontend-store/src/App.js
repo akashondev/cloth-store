@@ -17,7 +17,6 @@ import CartPage from "./pages/Cart";
 import Login from "./pages/Login";
 import ScrollTopBtn from "./components/ScrollTopBtn";
 import AdminDashboard from "./pages/AdminDashboard";
-import AdminPanel from "./components/AdminPanel";
 import PaymentPage from "./pages/Payment";
 import SuccessPage from "./pages/SuccessPage";
 import CancelPage from "./pages/CancelPage";
@@ -27,6 +26,7 @@ import Orders  from "./pages/Orders";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
+
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -106,7 +106,10 @@ function App() {
   // Pages where Navbar + Footer should NOT show
   const hideLayoutFor = ["/admin", "/Login"];
 
-  const hideLayout = hideLayoutFor.includes(location.pathname);
+  const hideLayout = hideLayoutFor
+    .map((p) => p.toLowerCase())
+    .includes(location.pathname.toLowerCase());
+
 
   return (
     <>

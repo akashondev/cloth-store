@@ -12,7 +12,7 @@ export default function VerifyEmailPage() {
 
         const data = await res.json();
         if (!res.ok) {
-          navigate("/login");
+          navigate("/Login");
           return;
         }
 
@@ -24,7 +24,7 @@ export default function VerifyEmailPage() {
 
         navigate("/", { replace: true });
       } catch (err) {
-        navigate("/login");
+        navigate("/Login");
       }
     }
 

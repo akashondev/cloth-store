@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import LoginPopup from "../components/LoginPopup";
 import {
   ShoppingCart,
   Trash2,
@@ -24,12 +25,12 @@ const saveCart = (cart) => {
   console.log("cart data :", cart);
 };
 
-
-
 function CartPage() {
+  const navigate = useNavigate();
   const [cart, setCart] = useState([]);
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     setCart(loadCart());
@@ -58,7 +59,6 @@ function CartPage() {
     setCart(updated);
     saveCart(updated);
     window.dispatchEvent(new Event("cartUpdated"));
-
   };
 
   const applyCoupon = () => {
@@ -98,6 +98,21 @@ function CartPage() {
     localStorage.setItem("cartSummary", JSON.stringify(summary));
   }, [cart, appliedCoupon]);
 
+  // ✅ THIS IS THE KEY FUNCTION - Check if user is logged in
+  const handleProceedToPayment = () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user) {
+      // User not logged in - show popup
+      setShowPopup(true);
+    } else {
+      // User is logged in - proceed to payment
+      navigate("/payment", {
+        state: JSON.parse(localStorage.getItem("cartSummary")),
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4">
       <div className="max-w-6xl mx-auto">
@@ -109,6 +124,13 @@ function CartPage() {
             <span className="text-lg">Shopping Cart</span>
           </div>
         </div>
+
+        {/* Login Popup */}
+        <LoginPopup
+          isOpen={showPopup}
+          onClose={() => setShowPopup(false)}
+          message="Please login to proceed with your purchase"
+        />
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Cart Items */}
@@ -255,21 +277,17 @@ function CartPage() {
                 </div>
               </div>
 
-              {/* Payment Button */}
-              <Link
-                to="/payment"
-                state={JSON.parse(localStorage.getItem("cartSummary"))}
-                className={`w-full block mt-6 rounded-xl ${
-                  cart.length === 0
-                    ? "opacity-50 cursor-not-allowed pointer-events-none"
-                    : ""
+              {/* Payment Button - ✅ UPDATED TO USE handleProceedToPayment */}
+              <button
+                onClick={handleProceedToPayment}
+                disabled={cart.length === 0}
+                className={`w-full mt-6 bg-[#0D9488] text-white py-4 rounded-xl font-semibold hover:bg-teal-700 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl ${
+                  cart.length === 0 ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
-                <button className="w-full bg-[#0D9488] text-white py-4 rounded-xl font-semibold hover:bg-teal-700 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
-                  <CreditCard className="w-5 h-5" />
-                  Proceed to Payment
-                </button>
-              </Link>
+                <CreditCard className="w-5 h-5" />
+                Proceed to Payment
+              </button>
 
               <p className="text-xs text-gray-500 text-center mt-4">
                 Secure and encrypted checkout

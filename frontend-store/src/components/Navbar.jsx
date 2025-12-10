@@ -23,8 +23,6 @@ function Navbar({ cartCount }) {
           
         </Link>
 
-      
-
         <ul className="hidden lg:flex gap-8 text-base font-medium">
           <Link to="/" className="group relative w-max text-white">
             Home
