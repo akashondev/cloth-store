@@ -39,7 +39,7 @@ export default function Footer() {
     <footer className="bg-zinc-950 text-white">
       <section className="border-b border-white/10 bg-[#F0FDFA]">
         <div className="mx-auto grid max-w-7xl gap-6 px-5 py-9 md:grid-cols-[1fr_auto] md:items-center lg:px-8">
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-black/70">
               The Styllin edit
             </p>
@@ -52,7 +52,7 @@ export default function Footer() {
           </div>
           <form
             onSubmit={subscribe}
-            className="flex w-full max-w-md gap-2 md:w-[28rem]"
+            className="flex min-w-0 w-full max-w-md flex-col gap-2 sm:flex-row md:w-[28rem]"
           >
             <label className="sr-only" htmlFor="footer-email">
               Email address
@@ -65,7 +65,7 @@ export default function Footer() {
               placeholder="Email address"
               className="min-w-0 flex-1 rounded-lg border border-white/25 bg-white px-4 py-3 text-sm text-zinc-950 outline-none focus:ring-2 focus:ring-white/60"
             />
-            <button className="inline-flex items-center gap-2 rounded-lg bg-zinc-950 px-4 py-3 text-sm font-semibold hover:bg-black">
+            <button className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-950 px-4 py-3 text-sm font-semibold hover:bg-black sm:w-auto">
               <Send size={16} />
               Subscribe
             </button>
@@ -74,7 +74,7 @@ export default function Footer() {
       </section>
       <div className="mx-auto max-w-7xl px-5 py-12 lg:px-8">
         <div className="grid gap-10 md:grid-cols-[1.2fr_1fr_1fr]">
-          <div>
+          <div className="min-w-0">
             <Link to="/" className="logo-font text-4xl font-bold">
               Styllin
             </Link>
@@ -90,7 +90,7 @@ export default function Footer() {
               hello@styllin.com
             </a>
           </div>
-          <nav>
+          <nav className="min-w-0">
             <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-teal-400">
               Explore
             </h3>
@@ -107,7 +107,7 @@ export default function Footer() {
               ))}
             </ul>
           </nav>
-          <nav>
+          <nav className="min-w-0">
             <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-teal-400">
               Your Styllin
             </h3>
