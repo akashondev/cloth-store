@@ -135,25 +135,6 @@ export default function Blog() {
           ))}
         </div>
       </section>
-      <section className="bg-teal-50">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-12 md:flex-row md:items-center md:justify-between lg:px-8">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-teal-700">
-              Put the notes into practice
-            </p>
-            <h2 className="mt-2 text-3xl font-bold">
-              Find your next everyday piece.
-            </h2>
-          </div>
-          <Link
-            to="/shop"
-            className="inline-flex w-fit items-center gap-2 rounded-lg bg-zinc-950 px-5 py-3 font-semibold text-white"
-          >
-            Shop the edit
-            <ArrowRight size={17} />
-          </Link>
-        </div>
-      </section>
     </motion.main>
   );
 }

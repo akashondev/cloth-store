@@ -6,6 +6,7 @@ import {
   PackageCheck,
   ShoppingCart,
   User,
+  X,
 } from "lucide-react";
 import logo from "../assets/logo.png";
 import { getStoredUser } from "../lib/storage";
@@ -44,19 +45,30 @@ function Navbar({ cartCount }) {
     };
   }, [userOpen]);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setMobileMenuOpen(false);
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [mobileMenuOpen]);
+
   return (
     <nav className="bg-black text-white sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 py-2.5 sm:px-4 sm:py-3 flex items-center justify-between">
         <Link className="flex items-center gap-2" to="/">
           <img
             src={logo}
-            className="w-10 h-10 object-contain"
+            className="h-9 w-9 object-contain sm:h-10 sm:w-10"
             alt="Styllin Logo"
             onError={(event) => {
               event.currentTarget.style.display = "none";
             }}
           />
-          <span className="text-2xl font-semibold logo-font">Styllin</span>
+          <span className="text-xl font-semibold logo-font sm:text-2xl">Styllin</span>
         </Link>
 
         <ul className="hidden lg:flex gap-8 text-base font-medium">
@@ -81,7 +93,7 @@ function Navbar({ cartCount }) {
           </Link>
         </ul>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1 sm:gap-3 lg:gap-4">
           <Link
             to="/cart"
             className="p-2 rounded-md hover:bg-white/10 relative flex items-center"
@@ -188,26 +200,35 @@ function Navbar({ cartCount }) {
           </div>
 
           <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-md hover:bg-white/10"
+            type="button"
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="lg:hidden flex h-10 w-10 items-center justify-center rounded-md transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
           >
-            <Menu size={22} />
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </div>
 
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-black border-t border-white/10 py-3 px-4 space-y-3 text-sm text-gray-300">
-          <Link to="/" className="block hover:text-white">
+        <div
+          id="mobile-navigation"
+          role="navigation"
+          aria-label="Mobile navigation"
+          className="lg:hidden border-t border-white/10 bg-zinc-950 px-3 py-3 text-sm text-zinc-200 shadow-2xl"
+        >
+          <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-4 py-3 font-medium transition hover:bg-white/10 hover:text-white">
             Home
           </Link>
-          <Link to="/Shop" className="block hover:text-white">
+          <Link to="/Shop" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-4 py-3 font-medium transition hover:bg-white/10 hover:text-white">
             Shop
           </Link>
-          <Link to="/Blog" className="block hover:text-white">
+          <Link to="/Blog" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-4 py-3 font-medium transition hover:bg-white/10 hover:text-white">
             Blog
           </Link>
-          <Link to="/About" className="block hover:text-white">
+          <Link to="/About" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-4 py-3 font-medium transition hover:bg-white/10 hover:text-white">
             About Us
           </Link>
         </div>

@@ -80,9 +80,12 @@ function ProductGrid({ products, handleAdd }) {
   const visibleProducts = safeProducts.slice(0, visibleCount);
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
+    <div className="mx-auto max-w-7xl px-3 py-8 sm:px-6 sm:py-12">
       {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      <div
+        data-testid="product-grid"
+        className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4 lg:gap-8"
+      >
         {visibleProducts.map((p) => (
           <motion.div
             key={p._id || p.id}
@@ -91,7 +94,7 @@ function ProductGrid({ products, handleAdd }) {
             className="group relative overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-xl"
           >
             {/* Product Image */}
-            <div className="relative w-full h-80 bg-zinc-100 flex items-center justify-center overflow-hidden">
+            <div className="relative flex h-44 w-full items-center justify-center overflow-hidden bg-zinc-100 sm:h-64 lg:h-80">
               <img
                 src={p.images?.[0] || p.image || fallbackImage}
                 alt={p.title || "Product"}
@@ -103,17 +106,17 @@ function ProductGrid({ products, handleAdd }) {
             </div>
 
             {/* Product Info */}
-            <div className="p-4 pb-5">
-              <h3 className="min-h-11 text-[15px] font-semibold text-zinc-900 mb-3 line-clamp-2 leading-relaxed">
+            <div className="p-2.5 pb-3 sm:p-4 sm:pb-5">
+              <h3 className="mb-2 min-h-10 line-clamp-2 text-xs font-semibold leading-5 text-zinc-900 sm:mb-3 sm:min-h-11 sm:text-[15px] sm:leading-relaxed">
                 {p.title || "Untitled Product"}
               </h3>
 
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-lg font-bold text-gray-900">
+              <div className="flex items-center justify-between gap-1.5 sm:gap-3">
+                <span className="text-sm font-bold text-gray-900 sm:text-lg">
                   {formatCurrency(p.price)}
                 </span>
                 {p.originalPrice && (
-                  <span className="text-gray-400 line-through text-sm ">
+                  <span className="text-[10px] text-gray-400 line-through sm:text-sm">
                     {formatCurrency(p.originalPrice)}
                   </span>
                 )}
@@ -129,11 +132,11 @@ function ProductGrid({ products, handleAdd }) {
                     });
                     handleAdd?.(p._id || p.id);
                   }}
-                  className="w-11 h-11 bg-black text-white rounded-full shadow-lg flex items-center justify-center
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black text-white shadow-lg sm:h-11 sm:w-11
                     transition-all duration-300 hover:bg-[#0D9488] transform hover:scale-110"
                   aria-label={`Add ${p.title} to cart`}
                 >
-                  <ShoppingCart className="w-5 h-5" />
+                  <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </div>
             </div>

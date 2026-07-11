@@ -15,7 +15,7 @@ import { getStoredUser } from "../lib/storage";
 import CancelOrderDialog from "../components/CancelOrderDialog";
 import { formatCurrency } from "../lib/utils";
 
-const API = "http://localhost:5000";
+const API = process.env.REACT_APP_API_URL;
 const date = (value) =>
   value
     ? new Intl.DateTimeFormat("en-IN", {

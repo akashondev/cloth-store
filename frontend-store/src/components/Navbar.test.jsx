@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import Navbar from "./Navbar";
 
 jest.mock(
@@ -90,4 +90,29 @@ test("does not show duplicate settings link in the account menu", () => {
   fireEvent.click(screen.getByRole("button", { name: "Open account menu for Asha" }));
 
   expect(screen.queryByText("Settings")).not.toBeInTheDocument();
+});
+
+test("opens mobile navigation and closes it after selecting a destination", () => {
+  renderNavbar();
+  fireEvent.click(screen.getByRole("button", { name: /open navigation menu/i }));
+  const mobileNavigation = screen.getByRole("navigation", {
+    name: /mobile navigation/i,
+  });
+
+  fireEvent.click(within(mobileNavigation).getByRole("link", { name: "Shop" }));
+
+  expect(
+    screen.queryByRole("navigation", { name: /mobile navigation/i })
+  ).not.toBeInTheDocument();
+});
+
+test("closes mobile navigation with Escape", () => {
+  renderNavbar();
+  fireEvent.click(screen.getByRole("button", { name: /open navigation menu/i }));
+
+  fireEvent.keyDown(document, { key: "Escape" });
+
+  expect(
+    screen.queryByRole("navigation", { name: /mobile navigation/i })
+  ).not.toBeInTheDocument();
 });

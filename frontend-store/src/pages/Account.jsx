@@ -24,7 +24,7 @@ export default function Account() {
       return;
     }
 
-    fetch(`http://localhost:5000/users/${user.id}`)
+    fetch(`${process.env.REACT_APP_API_URL}/users/${user.id}`)
       .then((res) => res.json())
       .then((data) => { setAccount(data); setAddress(data.address || ""); })
       .finally(() => setLoading(false));
@@ -57,7 +57,7 @@ export default function Account() {
   const saveAddress = async () => {
     setSavingAddress(true);
     try {
-      const res = await fetch(`http://localhost:5000/users/${account.id}/address`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address }) });
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/users/${account.id}/address`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not save address");
       setAccount((current) => ({ ...current, address: data.address }));

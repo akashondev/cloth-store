@@ -23,6 +23,16 @@ const products = Array.from({ length: 20 }, (_, index) => ({
   category: index === 0 ? "Clothing" : "Essentials",
 }));
 
+test("uses two product columns on mobile", () => {
+  render(<ProductGrid products={products.slice(0, 2)} />);
+
+  expect(screen.getByTestId("product-grid")).toHaveClass(
+    "grid-cols-2",
+    "md:grid-cols-3",
+    "lg:grid-cols-4"
+  );
+});
+
 test("shows Load Less immediately after Load More expands the grid", () => {
   render(<ProductGrid products={products} />);
 

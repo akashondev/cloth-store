@@ -71,7 +71,7 @@ function Login() {
 
     try {
       if (mode === "signup") {
-        const res = await fetch("http://localhost:5000/users/register", {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/users/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -99,7 +99,7 @@ function Login() {
       }
 
       if (mode === "login") {
-        const res = await fetch("http://localhost:5000/users/login", {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/users/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: trimmedEmail, password: trimmedPassword }),

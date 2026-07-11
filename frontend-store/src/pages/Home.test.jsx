@@ -70,6 +70,16 @@ test("applies animation variants to each hero content element", () => {
   );
 });
 
+test("uses a compact mobile hero with a contrast overlay", () => {
+  render(<Home />);
+
+  expect(screen.getByTestId("home-hero")).toHaveClass(
+    "min-h-[68svh]",
+    "md:min-h-[91vh]"
+  );
+  expect(screen.getByTestId("hero-overlay")).toBeInTheDocument();
+});
+
 test("shows eight product skeletons while products are loading", () => {
   render(<Home />);
 

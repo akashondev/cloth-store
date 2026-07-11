@@ -21,7 +21,7 @@ import { Input } from "../components/ui/input";
 import { formatCurrency } from "../lib/utils";
 import { Table, Td, Th } from "../components/ui/table";
 
-const API = "http://localhost:5000";
+const API = process.env.REACT_APP_API_URL;
 
 const statusTone = {
   PENDING: "amber",

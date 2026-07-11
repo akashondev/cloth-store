@@ -52,7 +52,7 @@ function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("http://localhost:5000/products");
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/products`);
         const data = await res.json();
         setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -68,7 +68,10 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-gray-100 overflow-x-hidden">
-      <section className="relative min-h-[91vh] w-full overflow-hidden">
+      <section
+        data-testid="home-hero"
+        className="relative min-h-[68svh] w-full overflow-hidden md:min-h-[91vh]"
+      >
         <AnimatePresence mode="wait">
           <motion.img
             key={currentHero}
@@ -78,14 +81,18 @@ function Home() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-0 h-full w-full object-cover object-[75%_25%]"
+            className="absolute inset-0 h-full w-full object-cover object-[68%_center] md:object-[75%_25%]"
             onError={(event) => {
               event.currentTarget.style.display = "none";
             }}
           />
         </AnimatePresence>
-        <div className="relative z-10 max-w-7xl mx-auto px-6 py-16 md:py-24 w-full flex items-center min-h-[88vh]">
-          <div className="max-w-xl space-y-6 text-left">
+        <div
+          data-testid="hero-overlay"
+          className="absolute inset-0 z-[1] bg-gradient-to-r from-white/95 via-white/80 to-white/15 md:from-white/70 md:via-white/30 md:to-transparent"
+        />
+        <div className="relative z-10 mx-auto flex min-h-[64svh] w-full max-w-7xl items-center px-5 py-10 sm:px-6 md:min-h-[88vh] md:py-24">
+          <div className="max-w-[19rem] text-left sm:max-w-xl">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentHero}
@@ -93,17 +100,17 @@ function Home() {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="space-y-6"
+                className="space-y-4 md:space-y-6"
               >
                 <motion.p
                   variants={heroItemVariants}
-                  className="text-sm font-bold uppercase tracking-[0.2em] text-[#0D9488]"
+                  className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#0D9488] sm:text-sm sm:tracking-[0.2em]"
                 >
                   Styllin selected edit
                 </motion.p>
                 <motion.h1
                   variants={heroItemVariants}
-                  className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-gray-900"
+                  className="text-[2.35rem] font-bold leading-[1.02] text-gray-950 sm:text-4xl md:text-5xl lg:text-6xl"
                 >
                   {currentSlide.title.join(" ")}
                   <br />
@@ -113,7 +120,7 @@ function Home() {
                 </motion.h1>
                 <motion.p
                   variants={heroItemVariants}
-                  className="text-lg md:text-xl text-gray-700 max-w-md"
+                  className="max-w-xs text-sm leading-6 text-gray-700 sm:max-w-md sm:text-lg md:text-xl"
                 >
                   {currentSlide.description}
                 </motion.p>
@@ -122,7 +129,7 @@ function Home() {
                   variants={heroItemVariants}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="inline-flex bg-amber-200 hover:bg-amber-300 text-teal-700 font-semibold px-8 py-4 rounded-full transition-colors duration-300 shadow-lg"
+                  className="inline-flex rounded-full bg-amber-200 px-6 py-3 text-sm font-semibold text-teal-700 shadow-lg transition-colors duration-300 hover:bg-amber-300 sm:px-8 sm:py-4 sm:text-base"
                 >
                   Shop Now
                 </motion.a>
@@ -131,7 +138,7 @@ function Home() {
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+        <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 gap-2 md:bottom-8">
           {heroImages.map((_, index) => (
             <motion.button
               key={index}

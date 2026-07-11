@@ -8,7 +8,7 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     async function verify() {
       try {
-        const res = await fetch(`http://localhost:5000/users/verify/${token}`);
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/users/verify/${token}`);
 
         const data = await res.json();
         if (!res.ok) {

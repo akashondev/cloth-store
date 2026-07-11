@@ -7,7 +7,7 @@ import ProductGridSkeleton from "../components/ProductGridSkeleton";
 export default function Shop() {
   const [products, setProducts] = useState([]), [loading, setLoading] = useState(true), [error, setError] = useState("");
   const [query, setQuery] = useState(""), [category, setCategory] = useState("all"), [sort, setSort] = useState("featured");
-  useEffect(() => { fetch("http://localhost:5000/products").then(async (res) => { const data = await res.json(); if (!res.ok) throw new Error(data.error || "Could not load the shop"); setProducts(Array.isArray(data) ? data : data.data || []); }).catch((e) => setError(e.message)).finally(() => setLoading(false)); }, []);
+  useEffect(() => { fetch(`${process.env.REACT_APP_API_URL}/products`).then(async (res) => { const data = await res.json(); if (!res.ok) throw new Error(data.error || "Could not load the shop"); setProducts(Array.isArray(data) ? data : data.data || []); }).catch((e) => setError(e.message)).finally(() => setLoading(false)); }, []);
   const categories = useMemo(() => ["all", ...new Set(products.map((p) => p.category).filter(Boolean))], [products]);
   const results = useMemo(() => {
     const filtered = products.filter((p) => (category === "all" || p.category === category) && `${p.title} ${p.description || ""}`.toLowerCase().includes(query.toLowerCase()));

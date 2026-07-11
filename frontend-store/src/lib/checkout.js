@@ -1,5 +1,5 @@
 export async function createCheckoutSession({ userId, cart, couponCode = null, fetchImpl = fetch }) {
-  const res = await fetchImpl("http://localhost:5000/payment/create-checkout-session", {
+  const res = await fetchImpl(`${process.env.REACT_APP_API_URL}/payment/create-checkout-session`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -15,7 +15,7 @@ export async function createCheckoutSession({ userId, cart, couponCode = null, f
 }
 
 export async function createCodOrder({ userId, cart, couponCode = null, fetchImpl = fetch }) {
-  const res = await fetchImpl("http://localhost:5000/payment/create-cod-order", {
+  const res = await fetchImpl(`${process.env.REACT_APP_API_URL}/payment/create-cod-order`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ userId, cart: cart.map((item) => ({ id: item.id, qty: item.qty })), couponCode }),

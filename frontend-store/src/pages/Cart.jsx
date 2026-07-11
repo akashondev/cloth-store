@@ -49,7 +49,7 @@ function CartPage() {
     setCart(loadCart());
     const user = getStoredUser();
     if (user?.id) {
-      fetch(`http://localhost:5000/users/${user.id}`).then((res) => res.json()).then((data) => {
+      fetch(`${process.env.REACT_APP_API_URL}/users/${user.id}`).then((res) => res.json()).then((data) => {
         setAddress(data.address || "");
         setAddressSaved(Boolean(data.address?.trim()));
       }).catch(() => setAddressSaved(false));
@@ -100,7 +100,7 @@ function CartPage() {
     setQuoteLoading(true);
     setCouponError("");
     try {
-      const res = await fetch("http://localhost:5000/payment/quote", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/payment/quote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -187,7 +187,7 @@ function CartPage() {
     if (!user) { setShowPopup(true); return; }
     setSavingAddress(true);
     try {
-      const res = await fetch(`http://localhost:5000/users/${user.id}/address`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address }) });
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/users/${user.id}/address`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not save address");
       setAddress(data.address); setAddressSaved(true);
