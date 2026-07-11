@@ -6,14 +6,14 @@ export default function NavItemButton({ item, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+      className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm transition-all ${
         active
-          ? "bg-blue-50 text-blue-600 font-medium"
-          : "text-gray-600 hover:bg-gray-50"
+          ? "bg-[#0D9488] text-white shadow-lg shadow-teal-900/20"
+          : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950"
       }`}
     >
       <Icon size={20} />
-      <span>{item.label}</span>
+      <span className="font-semibold">{item.label}</span>
     </button>
   );
 }

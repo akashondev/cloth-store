@@ -8,18 +8,18 @@ export default function SectionHeader({
   onAddClick,
 }) {
   return (
-    <div className="bg-white border-b sticky top-0 z-10">
-      <div className="px-8 py-4">
-        <div className="flex items-center justify-between">
+    <div className="sticky top-20 z-30 border-b border-zinc-200 bg-zinc-50/90 backdrop-blur lg:top-0">
+      <div className="px-5 py-4 lg:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-            <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+            <h1 className="text-2xl font-bold text-zinc-950">{title}</h1>
+            <p className="mt-1 text-sm text-zinc-500">{subtitle}</p>
           </div>
 
           {showAdd && (
             <button
               onClick={onAddClick}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-blue-500/30"
+              className="flex h-11 items-center justify-center gap-2 rounded-lg bg-[#0D9488] px-4 text-sm font-semibold text-white shadow-lg shadow-teal-900/20 transition hover:bg-[#0a7a6f]"
             >
               <Plus size={18} />
               Add Product

@@ -1,58 +1,245 @@
-import React, { useEffect, useState } from "react";
-import LoginPopup from "../components/LoginPopup";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  Package,
-  CheckCircle,
-  Truck,
+  CheckCircle2,
   MapPin,
-  ShoppingCart,
+  Package,
+  ShoppingBag,
+  Truck,
+  X,
 } from "lucide-react";
+import { motion } from "framer-motion";
+import LoginPopup from "../components/LoginPopup";
+import { Badge } from "../components/ui/badge";
+import { getStoredUser } from "../lib/storage";
+import CancelOrderDialog from "../components/CancelOrderDialog";
+import { formatCurrency } from "../lib/utils";
 
-export default function Order() {
-  const [activeOrder, setActiveOrder] = useState(null);
-  const [orderHistory, setOrderHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  const [showPopup, setShowPopup] = useState(false);
+const API = "http://localhost:5000";
+const date = (value) =>
+  value
+    ? new Intl.DateTimeFormat("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date(value))
+    : "—";
+const tones = {
+  PENDING: "amber",
+  PAID: "teal",
+  PROCESSING: "teal",
+  SHIPPED: "teal",
+  DELIVERED: "green",
+  CANCELLED: "red",
+};
 
-  useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      const userData = JSON.parse(stored);
-      setUser(userData);
-      fetchUserOrders(userData.id);
-    } else {
-      setShowPopup(true);
-      setLoading(false);
-    }
-  }, []);
+function OrderCard({ order, onCancel }) {
+  const canCancel = ["PAID", "PROCESSING"].includes(order.status);
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm"
+    >
+      <header className="flex flex-col gap-3 border-b border-zinc-100 bg-zinc-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="font-mono text-xs text-zinc-500">
+            ORDER {order.id.slice(0, 10).toUpperCase()}
+          </p>
+          <p className="mt-1 text-sm font-semibold text-zinc-950">
+            Placed {date(order.placedAt)}
+          </p>
+        </div>
+        <Badge tone={tones[order.status] || "gray"}>{order.status}</Badge>
+      </header>
 
-  const fetchUserOrders = async (userId) => {
+      <div className="p-5">
+        <div className="mb-5 grid gap-3 text-sm sm:grid-cols-2">
+          <div className="flex gap-3 rounded-lg bg-teal-50 p-3 text-teal-900">
+            <Truck size={18} />
+            <div>
+              <p className="font-semibold">Delivery</p>
+              <p className="text-teal-700">
+                {order.status === "DELIVERED"
+                  ? `Delivered ${date(order.deliveredAt)}`
+                  : order.status === "CANCELLED"
+                    ? "Order cancelled"
+                    : `Due ${date(order.deliverAt)}`}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3 rounded-lg bg-zinc-100 p-3 text-zinc-800">
+            <MapPin size={18} />
+            <div>
+              <p className="font-semibold">Ship to</p>
+              <p className="text-zinc-600">
+                {order.delivery?.line1 || "Delivery address unavailable"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {(order.items || [])
+            .filter((item) => item.title !== "Platform Fee")
+            .map((item, index) => (
+              <div
+                key={`${item.productId}-${index}`}
+                className="flex items-center gap-4 rounded-lg border border-zinc-100 p-3"
+              >
+                <div className="h-16 w-16 overflow-hidden rounded-lg bg-zinc-100">
+                  {item.image && (
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="h-full w-full object-cover"
+                    />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-zinc-950">
+                    {item.title}
+                  </p>
+                  <p className="text-sm text-zinc-500">
+                    Qty {item.quantity || item.qty} ×{" "}
+                    {formatCurrency(item.priceAtPurchase)}
+                  </p>
+                </div>
+                <p className="font-semibold text-zinc-950">
+                  {formatCurrency(
+                    (item.quantity || item.qty) * item.priceAtPurchase,
+                  )}
+                </p>
+              </div>
+            ))}
+        </div>
+
+        <div className="mt-5 flex items-end justify-between border-t border-zinc-200 pt-4">
+          <div className="text-xs text-zinc-500">
+            <p className="font-semibold text-zinc-700">
+              {order.paymentMethod === "COD"
+                ? "Cash on Delivery"
+                : "Online Payment"}
+            </p>
+            {order.couponCode && (
+              <p className="text-emerald-700">
+                Coupon {order.couponCode}: −{formatCurrency(order.discount)}
+              </p>
+            )}
+            <p>Includes {formatCurrency(order.platformFee)} platform fee</p>
+            {canCancel && (
+              <button
+                type="button"
+                onClick={() => onCancel(order)}
+                className="mt-3 rounded-lg border border-red-200 px-3 py-2 font-semibold text-red-600 hover:bg-red-50"
+              >
+                Cancel Order
+              </button>
+            )}
+          </div>
+          <div className="text-right">
+            <p className="text-xs uppercase tracking-wider text-zinc-500">
+              Charged total
+            </p>
+            <p className="text-2xl font-bold text-zinc-950">
+              {formatCurrency(order.total)}
+            </p>
+          </div>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+export default function Orders() {
+  const user = getStoredUser();
+  const userId = user?.id;
+  const location = useLocation();
+  const navigate = useNavigate();
+  const confirmationStarted = useRef(false);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(Boolean(user));
+  const [toast, setToast] = useState(null);
+  const [showPopup, setShowPopup] = useState(!user);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
+
+  const cancelUserOrder = async (order) => {
+    setCancelling(true);
     try {
-      setLoading(true);
-      const res = await fetch(`http://localhost:5000/users/${userId}`);
+      const res = await fetch(`${API}/users/orders/${order.id}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
       const data = await res.json();
-      setActiveOrder(data.activeOrder);
-      setOrderHistory(data.orderHistory || []);
-    } catch (err) {
-      console.error("Fetch error:", err);
+      if (!res.ok) throw new Error(data.error || "Could not cancel order");
+      setOrders((current) => current.filter((item) => item.id !== order.id));
+      setSelectedOrder(null);
+      window.dispatchEvent(
+        new CustomEvent("appToast", {
+          detail: {
+            title: "Order cancelled",
+            message: data.message,
+            tone: "success",
+            duration: 5000,
+          },
+        }),
+      );
+    } catch (error) {
+      window.dispatchEvent(
+        new CustomEvent("appToast", {
+          detail: {
+            title: "Cancellation failed",
+            message: error.message,
+            tone: "error",
+          },
+        }),
+      );
     } finally {
-      setLoading(false);
+      setCancelling(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your orders...</p>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!userId) return;
+    const load = async () => {
+      try {
+        const sessionId = new URLSearchParams(location.search).get(
+          "session_id",
+        );
+        if (sessionId && !confirmationStarted.current) {
+          confirmationStarted.current = true;
+          const confirm = await fetch(`${API}/payment/confirm-session`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId }),
+          });
+          const result = await confirm.json();
+          if (!confirm.ok)
+            throw new Error(result.error || "Payment confirmation failed");
+          localStorage.removeItem("cart");
+          localStorage.removeItem("cartSummary");
+          window.dispatchEvent(new Event("cartUpdated"));
+          setToast({
+            type: "success",
+            message: "Payment successful. Your order is now in your history.",
+          });
+          navigate("/orders", { replace: true });
+        }
+        const res = await fetch(`${API}/users/${userId}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Could not load orders");
+        setOrders(data.orders || []);
+      } catch (error) {
+        setToast({ type: "error", message: error.message });
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [userId, location.search, navigate]);
 
-  if (!user) {
+  if (!user)
     return (
       <>
         <LoginPopup
@@ -60,191 +247,93 @@ export default function Order() {
           onClose={() => setShowPopup(false)}
           message="Please login to view your orders"
         />
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-          <div className="text-center">
-            <ShoppingCart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Please Login
-            </h2>
-            <p className="text-gray-600">
-              You need to login to view your orders
-            </p>
+        <div className="grid min-h-[65vh] place-items-center bg-zinc-50 text-center">
+          <div>
+            <ShoppingBag className="mx-auto text-zinc-300" size={56} />
+            <h1 className="mt-4 text-2xl font-bold">Sign in to view orders</h1>
+            <Link
+              to="/Login"
+              className="mt-5 inline-flex rounded-lg bg-[#0D9488] px-5 py-3 font-semibold text-white"
+            >
+              Login
+            </Link>
           </div>
         </div>
       </>
     );
-  }
-
-  const hasOrders = activeOrder || orderHistory.length > 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="bg-white border-b shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">My Orders</h1>
-          <p className="text-gray-600">
-            Track your deliveries and view order history
+    <div className="min-h-screen bg-zinc-50">
+      <CancelOrderDialog
+        order={selectedOrder}
+        loading={cancelling}
+        onClose={() => setSelectedOrder(null)}
+        onConfirm={() => cancelUserOrder(selectedOrder)}
+      />
+      {toast && (
+        <div
+          role="status"
+          className={`fixed right-5 top-20 z-[60] flex max-w-sm items-start gap-3 rounded-lg border p-4 shadow-xl ${toast.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-900"}`}
+        >
+          <CheckCircle2 size={20} />
+          <p className="flex-1 text-sm font-medium">{toast.message}</p>
+          <button
+            aria-label="Dismiss notification"
+            onClick={() => setToast(null)}
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
+      <section className="bg-black text-white">
+        <div className="mx-auto max-w-6xl px-5 py-12">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#0D9488]">
+            Styllin account
+          </p>
+          <h1 className="mt-3 text-4xl font-bold md:text-5xl">
+            Orders & delivery
+          </h1>
+          <p className="mt-3 max-w-xl text-white/65">
+            Track every selected piece from secure checkout to your door.
           </p>
         </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto p-6">
-        {activeOrder && (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 mb-8 overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-white">
-              <div className="flex items-center gap-3 mb-2">
-                <Truck size={28} />
-                <h2 className="text-2xl font-bold">Active Order</h2>
-              </div>
-              <p className="text-blue-100">Order is on its way to you</p>
-            </div>
-
-            <div className="p-8">
-              <div className="bg-blue-50 rounded-xl p-4 mb-6 border border-blue-100">
-                <div className="flex items-start gap-3">
-                  <MapPin className="text-blue-600 mt-1" size={20} />
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-1">
-                      Delivery Address
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Your package will be delivered soon
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Package size={20} />
-                  Order Items
-                </h3>
-                <div className="space-y-3">
-                  {activeOrder.items.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-20 h-20 object-cover rounded-lg shadow-sm"
-                      />
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900">
-                          {item.title}
-                        </p>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Quantity: {item.qty} × ₹
-                          {item.priceAtPurchase.toLocaleString()}
-                        </p>
-                      </div>
-                      <p className="font-bold text-gray-900">
-                        ₹{(item.qty * item.priceAtPurchase).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center pt-6 border-t-2 border-gray-200">
-                <span className="text-xl font-semibold text-gray-700">
-                  Order Total
-                </span>
-                <span className="text-3xl font-bold text-gray-900">
-                  ₹{activeOrder.total.toLocaleString()}
-                </span>
-              </div>
-            </div>
+      </section>
+      <main className="mx-auto max-w-6xl px-5 py-10">
+        {loading ? (
+          <div aria-label="Loading orders" className="space-y-5">
+            {[1, 2].map((n) => (
+              <div
+                key={n}
+                className="h-72 animate-pulse rounded-lg border bg-white"
+              />
+            ))}
           </div>
-        )}
-
-        {orderHistory.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="px-8 py-6 bg-gray-50 border-b">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Order History
-                  </h2>
-                  <p className="text-gray-600 mt-1">
-                    {orderHistory.length} completed orders
-                  </p>
-                </div>
-                <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold">
-                  All Delivered
-                </div>
-              </div>
-            </div>
-
-            <div className="p-8 space-y-6">
-              {orderHistory.map((order, idx) => (
-                <div
-                  key={idx}
-                  className="border-2 border-gray-100 rounded-xl p-6 hover:border-green-300 hover:shadow-md transition-all"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <CheckCircle className="text-green-600" size={20} />
-                    </div>
-                    <span className="font-semibold text-green-600">
-                      Delivered
-                    </span>
-                  </div>
-
-                  <div className="space-y-3 mb-4">
-                    {order.items.map((item, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
-                      >
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">
-                            {item.title}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Qty: {item.qty} × ₹
-                            {item.priceAtPurchase.toLocaleString()}
-                          </p>
-                        </div>
-                        <p className="font-semibold text-gray-900">
-                          ₹{(item.qty * item.priceAtPurchase).toLocaleString()}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-between items-center pt-4 border-t">
-                    <span className="font-semibold text-gray-700">
-                      Order Total
-                    </span>
-                    <span className="text-xl font-bold text-gray-900">
-                      ₹{order.total.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+        ) : orders.length ? (
+          <div className="space-y-6">
+            {orders.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                onCancel={setSelectedOrder}
+              />
+            ))}
           </div>
-        )}
-
-        {!hasOrders && (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
-            <ShoppingCart className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              No Orders Yet
-            </h2>
-            <p className="text-gray-600">
-              Start shopping to see your orders here
+        ) : (
+          <div className="rounded-lg border bg-white p-12 text-center">
+            <Package className="mx-auto text-zinc-300" size={52} />
+            <h2 className="mt-4 text-2xl font-bold">No orders yet</h2>
+            <p className="mt-2 text-zinc-500">
+              Your next Styllin order will appear here.
             </p>
+            <Link
+              to="/shop"
+              className="mt-5 inline-flex rounded-lg bg-zinc-950 px-5 py-3 font-semibold text-white"
+            >
+              Explore the shop
+            </Link>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

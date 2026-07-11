@@ -1,14 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, User, Menu } from "lucide-react";
+import {
+  LogOut,
+  Menu,
+  PackageCheck,
+  ShoppingCart,
+  User,
+} from "lucide-react";
 import logo from "../assets/logo.png";
+import { getStoredUser } from "../lib/storage";
 
 function Navbar({ cartCount }) {
-  const [cartOpen, setCartOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const user = JSON.parse(localStorage.getItem("user"));
+  const accountMenuRef = useRef(null);
+  const accountTriggerRef = useRef(null);
+  const user = getStoredUser();
+  const userName = user?.name?.trim() || "";
+  const userInitial = userName.charAt(0).toUpperCase();
 
+  useEffect(() => {
+    if (!userOpen) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (!accountMenuRef.current?.contains(event.target)) {
+        setUserOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setUserOpen(false);
+        accountTriggerRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [userOpen]);
 
   return (
     <nav className="bg-black text-white sticky top-0 z-50">
@@ -18,9 +52,11 @@ function Navbar({ cartCount }) {
             src={logo}
             className="w-10 h-10 object-contain"
             alt="Styllin Logo"
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
           />
           <span className="text-2xl font-semibold logo-font">Styllin</span>
-          
         </Link>
 
         <ul className="hidden lg:flex gap-8 text-base font-medium">
@@ -58,53 +94,91 @@ function Navbar({ cartCount }) {
             )}
           </Link>
 
-          <div className="relative">
+          <div ref={accountMenuRef} className="relative">
             <button
-              onClick={() => {
-                setUserOpen(!userOpen);
-                setCartOpen(false);
-              }}
+              ref={accountTriggerRef}
+              type="button"
+              aria-expanded={userOpen}
+              aria-haspopup="menu"
+              aria-label={userName ? `Open account menu for ${userName}` : "Open account menu"}
+              data-account-state={user ? "logged-in" : "logged-out"}
+              onClick={() => setUserOpen((open) => !open)}
               className="p-2 rounded-md hover:bg-white/10"
             >
-              <User size={20} />
+              {user ? (
+                <span
+                  data-testid={userInitial ? "account-avatar" : "account-avatar-fallback"}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0D9488] text-sm font-bold text-white ring-2 ring-teal-300/40 transition-colors hover:bg-teal-700"
+                  aria-hidden="true"
+                >
+                  {userInitial || <User size={17} strokeWidth={2.25} />}
+                </span>
+              ) : (
+                <User size={20} />
+              )}
             </button>
 
             {userOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-black border border-white/10 rounded-lg shadow-lg z-50">
-                <ul className="p-2 text-sm text-gray-300">
-                  {user && (
-                    <div className="px-3 py-2 text-gray-400 text-sm">
-                      Logged in as <b>{user.name}</b>
+              <div
+                role="menu"
+                className="absolute right-0 top-full mt-3 w-64 overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-950 shadow-2xl z-50"
+              >
+                <div className="border-b border-zinc-100 bg-zinc-50 px-4 py-3">
+                  {user ? (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0D9488]">
+                        Styllin account
+                      </p>
+                      <p className="mt-1 truncate text-sm font-semibold text-zinc-950">
+                        {user.name}
+                      </p>
+                      <p className="truncate text-xs text-zinc-500">{user.email}</p>
                     </div>
+                  ) : (
+                    <p className="text-sm font-semibold text-zinc-950">
+                      Sign in to view orders
+                    </p>
                   )}
+                </div>
 
-                  <Link className="block px-3 py-2 hover:bg-white/10" to="#">
+                <ul className="p-2 text-sm">
+                  <Link
+                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-zinc-700 transition hover:bg-teal-50 hover:text-[#0D9488]"
+                    to="/account"
+                    onClick={() => setUserOpen(false)}
+                  >
+                    <User size={17} />
                     My Account
                   </Link>
-                  <Link className="block px-3 py-2 hover:bg-white/10" to="/Orders">
+
+                  <Link
+                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-zinc-700 transition hover:bg-teal-50 hover:text-[#0D9488]"
+                    to="/Orders"
+                    onClick={() => setUserOpen(false)}
+                  >
+                    <PackageCheck size={17} />
                     Orders
-                  </Link>
-                  <Link className="block px-3 py-2 hover:bg-white/10" to="#">
-                    Settings
                   </Link>
                 </ul>
 
-                <div className="p-2 border-t border-white/10">
+                <div className="border-t border-zinc-100 p-2">
                   {!user ? (
                     <Link
-                      className="block px-3 py-2 hover:bg-white/10"
+                      className="block rounded-md bg-[#0D9488] px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-teal-700"
                       to="/Login"
+                      onClick={() => setUserOpen(false)}
                     >
                       Login
                     </Link>
                   ) : (
                     <button
-                      className="block w-full text-left px-3 py-2 hover:bg-white/10"
+                      className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
                       onClick={() => {
                         localStorage.removeItem("user");
                         window.location.href = "/Login";
                       }}
                     >
+                      <LogOut size={17} />
                       Logout
                     </button>
                   )}

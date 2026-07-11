@@ -1,169 +1,159 @@
-import React, { useState } from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { ArrowRight, BookOpen, Clock3 } from "lucide-react";
 
-const Blog = () => {
-  const posts = [
-    {
-      id: 1,
-      title: "New Autumn Collection",
-      description:
-        "Discover our latest autumn collection featuring cozy sweaters, stylish jackets, and comfortable everyday wear for both men and women.",
-      image:
-        "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80",
-      category: "New Arrivals",
-    },
-    {
-      id: 2,
-      title: "Men's Formal Wear",
-      description:
-        "Elevate your professional wardrobe with our premium selection of suits, dress shirts, and accessories designed for the modern gentleman.",
-      image:
-        "https://media.istockphoto.com/id/1413766112/photo/successful-mature-businessman-looking-at-camera-with-confidence.jpg?s=2048x2048&w=is&k=20&c=KPnbXWbV0dJewQ5B1sbbcX7ox5UpuzHnrTrPVkLhdNc=",
-      category: "Men's Fashion",
-    },
-    {
-      id: 3,
-      title: "Women's Summer Collection",
-      description:
-        "Light, breezy, and effortlessly chic. Explore our summer collection with flowing dresses, elegant tops, and versatile pieces.",
-      image:
-        "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80",
-      category: "Women's Fashion",
-    },
-    {
-      id: 4,
-      title: "Casual Streetwear",
-      description:
-        "Stay comfortable and stylish with our urban streetwear collection. Featuring hoodies, joggers, sneakers, and trendy accessories.",
-      image:
-        "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
-      category: "Casual Wear",
-    },
-    {
-      id: 5,
-      title: "Premium Denim Collection",
-      description:
-        "Quality denim that fits perfectly. Our collection includes classic jeans, denim jackets, and modern cuts for every body type.",
-      image:
-        "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&q=80",
-      category: "Denim",
-    },
-    {
-      id: 6,
-      title: "Active Lifestyle Wear",
-      description:
-        "Performance meets style. Our activewear collection keeps you comfortable during workouts and looks great anywhere you go.",
-      image:
-        "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80",
-      category: "Activewear",
-    },
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2  }}>
-    <div className="min-h-screen bg-gray-100">
-
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-20"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h1 className="text-6xl md:text-7xl font-extrabold mb-6 tracking-tight">
-            Our Collections
-          </h1>
-          <p className="text-2xl text-gray-200 font-light">
-            Explore the latest trends and timeless classics
-          </p>
-        </div>
-      </div>
-
-      {/* Magazine Style Layout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        {/* Featured Item - Large */}
-        <div className="mb-16 group cursor-pointer">
-          <div className="relative h-96 md:h-[600px] overflow-hidden rounded-xl">
-            <img
-              src={posts[0].image}
-              alt={posts[0].title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-            <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 text-white">
-              <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
-                {posts[0].category}
-              </span>
-              <h2 className="text-4xl md:text-6xl font-bold mb-4 group-hover:text-purple-300 transition-colors duration-300">
-                {posts[0].title}
-              </h2>
-              <p className="text-lg md:text-xl text-gray-200 max-w-3xl">
-                {posts[0].description}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          {posts.slice(1, 3).map((post) => (
-            <div key={post.id} className="group cursor-pointer">
-              <div className="relative h-80 overflow-hidden mb-6 rounded-xl">
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
-                    {post.category}
-                  </span>
-                  <h3 className="text-3xl font-bold group-hover:text-purple-300 transition-colors duration-300">
-                    {post.title}
-                  </h3>
-                </div>
-              </div>
-              <p className="text-gray-600 text-lg leading-relaxed px-2">
-                {post.description}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Three Column Compact Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {posts.slice(3, 6).map((post) => (
-            <div key={post.id} className="group cursor-pointer">
-              <div className="relative h-64 overflow-hidden mb-4 rounded-xl">
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors duration-300"></div>
-                <div className="absolute top-4 left-4">
-                  <span className="bg-white text-gray-900 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                    {post.category}
-                  </span>
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-purple-700 transition-colors duration-300">
-                {post.title}
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                {post.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      </div>
-      </motion.div>
-  );
+const stories = [
+  {
+    title: "The five-piece weekday wardrobe",
+    category: "Wardrobe notes",
+    time: "4 min read",
+    image:
+      "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1000&q=85",
+    copy: "Build more outfits with fewer decisions: one strong layer, two reliable shirts, and trousers that work across the week.",
+  },
+  {
+    title: "How to make relaxed tailoring feel natural",
+    category: "How to wear",
+    time: "5 min read",
+    image:
+      "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=900&q=85",
+    copy: "Balance structure with softer fabrics, clean sneakers, and uncomplicated layers.",
+  },
+  {
+    title: "A practical guide to better denim",
+    category: "Fabric guide",
+    time: "3 min read",
+    image:
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?w=900&q=85",
+    copy: "Fit, weight, wash, and the small details that help denim earn a permanent place in your rotation.",
+  },
+  {
+    title: "Three ways to refresh familiar basics",
+    category: "Style edit",
+    time: "4 min read",
+    image:
+      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=900&q=85",
+    copy: "Change proportion, add one considered color, and let texture do more of the work.",
+  },
+];
+const reveal = {
+  initial: { opacity: 0, y: 16 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.2 },
+  transition: { duration: 0.35 },
 };
 
-export default Blog;
+export default function Blog() {
+  return (
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-zinc-50"
+    >
+      <section className="bg-black text-white">
+        <div className="mx-auto max-w-7xl px-5 py-16 lg:px-8">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-teal-400">
+            <BookOpen size={16} />
+            Styllin journal
+          </p>
+          <h1 className="mt-4 max-w-3xl text-4xl font-bold leading-tight md:text-6xl">
+            Useful ideas for a wardrobe that works harder.
+          </h1>
+          <p className="mt-5 max-w-xl leading-7 text-white/65">
+            Style guidance, fabric notes, and simple ways to get more from the
+            pieces you already own.
+          </p>
+        </div>
+      </section>
+      <section className="mx-auto max-w-7xl px-5 py-12 lg:px-8">
+        <motion.article
+          {...reveal}
+          className="group grid overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm lg:grid-cols-[1.35fr_1fr]"
+        >
+          <div className="min-h-80 overflow-hidden">
+            <img
+              src={stories[0].image}
+              alt="Curated clothing rail"
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            />
+          </div>
+          <div className="flex flex-col justify-center p-7 md:p-10">
+            <p className="text-xs font-bold uppercase tracking-[.18em] text-teal-600">
+              Featured · {stories[0].category}
+            </p>
+            <h2 className="mt-4 text-3xl font-bold text-zinc-950 md:text-4xl">
+              {stories[0].title}
+            </h2>
+            <p className="mt-4 leading-7 text-zinc-600">{stories[0].copy}</p>
+            <p className="mt-6 flex items-center gap-2 text-sm text-zinc-500">
+              <Clock3 size={16} />
+              {stories[0].time}
+            </p>
+          </div>
+        </motion.article>
+      </section>
+      <section className="mx-auto max-w-7xl px-5 pb-16 lg:px-8">
+        <div className="mb-7">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-teal-600">
+            More from the journal
+          </p>
+          <h2 className="mt-2 text-3xl font-bold">
+            Considered, not complicated.
+          </h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {stories.slice(1).map((story, i) => (
+            <motion.article
+              key={story.title}
+              {...reveal}
+              transition={{ duration: 0.3, delay: i * 0.06 }}
+              whileHover={{ y: -4 }}
+              className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm"
+            >
+              <div className="aspect-[4/3] overflow-hidden">
+                <img
+                  src={story.image}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-teal-600">
+                  {story.category}
+                </p>
+                <h3 className="mt-3 text-xl font-bold">{story.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">
+                  {story.copy}
+                </p>
+                <p className="mt-5 flex items-center gap-2 text-xs text-zinc-500">
+                  <Clock3 size={14} />
+                  {story.time}
+                </p>
+              </div>
+            </motion.article>
+          ))}
+        </div>
+      </section>
+      <section className="bg-teal-50">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-12 md:flex-row md:items-center md:justify-between lg:px-8">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.18em] text-teal-700">
+              Put the notes into practice
+            </p>
+            <h2 className="mt-2 text-3xl font-bold">
+              Find your next everyday piece.
+            </h2>
+          </div>
+          <Link
+            to="/shop"
+            className="inline-flex w-fit items-center gap-2 rounded-lg bg-zinc-950 px-5 py-3 font-semibold text-white"
+          >
+            Shop the edit
+            <ArrowRight size={17} />
+          </Link>
+        </div>
+      </section>
+    </motion.main>
+  );
+}

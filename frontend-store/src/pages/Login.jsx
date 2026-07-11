@@ -1,53 +1,177 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import heroImg from "../assets/login-hero.jpg";
-import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  XCircle,
+  X,
+} from "lucide-react";
 
 function Login() {
+  const navigate = useNavigate();
+
   const [mode, setMode] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // toast = { type: "success" | "error", message: string }
+  const [toast, setToast] = useState(null);
+
+  // Auto-dismiss the toast
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(
+      () => setToast(null),
+      toast.type === "success" ? 2500 : 4000,
+    );
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   const handleSubmit = async () => {
-    if (mode === "signup") {
-      const res = await fetch("http://localhost:5000/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
+    if (loading) return;
 
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error);
-        return;
-      }
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
 
-      alert("Verification email sent. Check your inbox.");
+    if (mode === "signup" && !trimmedName) {
+      setToast({ type: "error", message: "Please enter your name." });
       return;
     }
 
-    if (mode === "login") {
-      const res = await fetch("http://localhost:5000/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+    if (!trimmedEmail) {
+      setToast({ type: "error", message: "Please enter your email address." });
+      return;
+    }
 
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error);
+    if (!trimmedPassword) {
+      setToast({ type: "error", message: "Please enter your password." });
+      return;
+    }
+
+    if (mode === "signup") {
+      if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(trimmedPassword)) {
+        setToast({
+          type: "error",
+          message:
+            "Password must be at least 6 characters and include letters and numbers only.",
+        });
+        return;
+      }
+    }
+
+    setLoading(true);
+
+    try {
+      if (mode === "signup") {
+        const res = await fetch("http://localhost:5000/users/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: trimmedName,
+            email: trimmedEmail,
+            password: trimmedPassword,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          setToast({
+            type: "error",
+            message: data.error || "Could not create your account.",
+          });
+          return;
+        }
+
+        setToast({
+          type: "success",
+          message: data.message || "Account created. You can sign in now.",
+        });
+        setMode("login");
         return;
       }
 
-      alert("Login successful!");
+      if (mode === "login") {
+        const res = await fetch("http://localhost:5000/users/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: trimmedEmail, password: trimmedPassword }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          setToast({
+            type: "error",
+            message: data.error || "Invalid email or password.",
+          });
+          return;
+        }
+
+        // Persist login details so they survive a refresh
+        if (data.token) localStorage.setItem("token", data.token);
+        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
+
+        setToast({
+          type: "success",
+          message: "Login successful! Redirecting...",
+        });
+
+        // Let the popup show briefly, then redirect with the login details attached
+        setTimeout(() => {
+          navigate("/", { state: { user: data.user, token: data.token } });
+        }, 1200);
+      }
+    } catch (err) {
+      setToast({ type: "error", message: "Network error. Please try again." });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col lg:flex-row bg-white">
+    <div className="w-full min-h-screen flex flex-col lg:flex-row bg-white relative">
+      {/* Toast Popup */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-50 animate-toast-in">
+          <div
+            className={`flex items-start gap-3 w-80 max-w-[90vw] px-4 py-3 rounded-xl shadow-lg border backdrop-blur-sm
+            ${
+              toast.type === "success"
+                ? "bg-emerald-50/95 border-emerald-200 text-emerald-800"
+                : "bg-red-50/95 border-red-200 text-red-800"
+            }`}
+            role="status"
+            aria-live="polite"
+          >
+            {toast.type === "success" ? (
+              <CheckCircle2
+                size={22}
+                className="shrink-0 text-emerald-600 mt-0.5"
+              />
+            ) : (
+              <XCircle size={22} className="shrink-0 text-red-600 mt-0.5" />
+            )}
+            <p className="text-sm font-medium flex-1 leading-snug">
+              {toast.message}
+            </p>
+            <button
+              onClick={() => setToast(null)}
+              className="text-gray-400 hover:text-gray-600 shrink-0"
+              aria-label="Dismiss"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Left Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-8 lg:px-20">
         <div className="w-full max-w-md space-y-8">
@@ -103,6 +227,11 @@ function Login() {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {mode === "signup" && (
+                <p className="text-xs text-gray-500">
+                  Use at least 6 characters with letters and numbers only.
+                </p>
+              )}
             </div>
 
             {mode === "signup" && (
@@ -116,9 +245,14 @@ function Login() {
 
             <button
               onClick={handleSubmit}
-              className="w-full bg-[#0D9488] hover:bg-[#0a7a6f] text-white py-3 rounded-lg font-medium"
+              disabled={loading}
+              className="w-full bg-[#0D9488] hover:bg-[#0a7a6f] disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-lg font-medium transition-colors"
             >
-              {mode === "login" ? "Signin" : "Signup"}
+              {loading
+                ? "Please wait..."
+                : mode === "login"
+                  ? "Signin"
+                  : "Signup"}
             </button>
           </div>
 
@@ -186,12 +320,21 @@ function Login() {
           to { opacity: 1; transform: translateX(0); }
         }
 
+        @keyframes toast-in {
+          from { opacity: 0; transform: translateY(-12px) translateX(12px); }
+          to { opacity: 1; transform: translateY(0) translateX(0); }
+        }
+
         .animate-fade-in {
           animation: fade-in 1s ease-out;
         }
 
         .animate-slide-in {
           animation: slide-in 1s ease-out;
+        }
+
+        .animate-toast-in {
+          animation: toast-in 0.35s ease-out;
         }
       `}</style>
     </div>

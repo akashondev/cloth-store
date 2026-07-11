@@ -1,23 +1,67 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  CheckCircle2,
+  FileText,
+  LayoutDashboard,
+  Package,
+  Search,
+  TrendingUp,
+  Truck,
+  Users,
+} from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
 import SectionHeader from "../components/SectionHeader";
-import ProductCard from "../components/ProductCard";
 import ProductFormModal from "../components/ProductFormModal";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { formatCurrency } from "../lib/utils";
+import { Table, Td, Th } from "../components/ui/table";
 
-import {
-  Package,
-  TrendingUp,
-  Layers,
-  LayoutDashboard,
-  Users,
-  FileText,
-  Settings,
-  ShoppingCart,
-} from "lucide-react";
+const API = "http://localhost:5000";
+
+const statusTone = {
+  PENDING: "amber",
+  PAID: "teal",
+  PROCESSING: "teal",
+  SHIPPED: "amber",
+  DELIVERED: "green",
+  CANCELLED: "red",
+};
+
+
+function StatCard({ icon: Icon, label, value, caption }) {
+  return (
+    <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.18 }}>
+      <Card className="overflow-hidden border-zinc-200/80 bg-white/95 shadow-lg shadow-zinc-900/5">
+        <CardContent className="p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-zinc-500">{label}</p>
+              <p className="mt-2 text-2xl font-bold text-zinc-950">{value}</p>
+              {caption && <p className="mt-1 text-xs text-zinc-500">{caption}</p>}
+            </div>
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-teal-50 text-[#0D9488] ring-1 ring-teal-100">
+              <Icon size={22} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [activeNav, setActiveNav] = useState("dashboard");
+  const [query, setQuery] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     title: "",
     price: "",
@@ -26,297 +70,273 @@ export default function AdminDashboard() {
     image: "",
   });
 
-  const [editingId, setEditingId] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [orders, setOrders] = useState([]);
-  const [activeNav, setActiveNav] = useState("dashboard");
-
-
-  const [stats, setStats] = useState({
-    totalProducts: 0,
-    totalRevenue: 0,
-    categories: 0,
-  });
-
-  const [user, setUser] = useState(null);
-
-  const fetchOrders = async () => {
-    const res = await fetch("http://localhost:5000/users/orders/active");
-    const data = await res.json();
-    setOrders(data);
-  };
-   useEffect(() => {
-     if (activeNav === "orders") fetchOrders();
-   }, [activeNav]);
-  
-  const markDelivered = async (userId) => {
-    await fetch(`http://localhost:5000/users/${userId}/order-delivered`, {
-      method: "POST",
-    });
-    fetchOrders(); // refresh list
-  };
-
-
-
   const navItems = [
     { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { id: "products", icon: Package, label: "Products" },
-    { id: "customers", icon: Users, label: "Customers" },
     { id: "orders", icon: FileText, label: "Orders" },
-    { id: "settings", icon: Settings, label: "Settings" },
+    { id: "customers", icon: Users, label: "Customers" },
   ];
 
-  // Load user from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) setUser(JSON.parse(stored));
-  }, []);
-
-  // Fetch products
   const fetchProducts = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/products");
-      const data = await res.json();
-      setProducts(data);
+    const res = await fetch(`${API}/products`);
+    const data = await res.json();
+    setProducts(Array.isArray(data) ? data : []);
+  };
 
-      const totalRevenue = data.reduce(
-        (sum, p) => sum + (parseFloat(p.price) || 0),
-        0
-      );
+  const fetchOrders = async () => {
+    const res = await fetch(`${API}/users/orders/all`);
+    const data = await res.json();
+    setOrders(Array.isArray(data) ? data : []);
+  };
 
-      const categories = [...new Set(data.map((p) => p.category))].length;
-
-      setStats({
-        totalProducts: data.length,
-        totalRevenue,
-        categories,
-      });
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
+  const fetchCustomers = async () => {
+    const res = await fetch(`${API}/users/customers/list`);
+    const data = await res.json();
+    setCustomers(Array.isArray(data) ? data : []);
   };
 
   useEffect(() => {
     fetchProducts();
+    fetchOrders();
+    fetchCustomers();
   }, []);
 
-  // Reset form fields
-  const resetForm = () =>
-    setForm({
-      title: "",
-      price: "",
-      category: "",
-      description: "",
-      image: "",
-    });
+  const stats = useMemo(() => {
+    const paidOrders = orders.filter((order) => ["PAID", "PROCESSING", "SHIPPED", "DELIVERED"].includes(order.status));
+    return {
+      products: products.length,
+      orders: orders.length,
+      customers: customers.length,
+      revenue: paidOrders.reduce((sum, order) => sum + Number(order.total || 0), 0),
+    };
+  }, [products, orders, customers]);
 
-  // Submit add/edit product
-  const handleSubmit = () => {
+  const filteredProducts = products.filter((product) => {
+    const text = `${product.title} ${product.category}`.toLowerCase();
+    return text.includes(query.toLowerCase());
+  });
+
+  const resetForm = () => {
+    setForm({ title: "", price: "", category: "", description: "", image: "" });
+    setEditingId(null);
+  };
+
+  const handleSubmit = async () => {
+    const payload = { ...form, price: Number(form.price), images: [form.image].filter(Boolean) };
+    const url = editingId ? `${API}/products/${editingId}` : `${API}/products`;
     const method = editingId ? "PUT" : "POST";
-    const url = editingId
-      ? `http://localhost:5000/products/product/${editingId}`
-      : "http://localhost:5000/products/addproduct";
 
-    const payload = editingId
-      ? { ...form, images: [form.image] }
-      : [{ ...form, images: [form.image] }];
-
-    fetch(url, {
+    const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    }).then((res) => {
-      if (res.ok) {
-        fetchProducts();
-        resetForm();
-        setEditingId(null);
-        setShowForm(false);
-      }
     });
+
+    if (res.ok) {
+      await fetchProducts();
+      resetForm();
+      setShowForm(false);
+    }
   };
 
-  // Edit product
-  const handleEdit = (p) => {
+  const handleEdit = (product) => {
     setForm({
-      title: p.title,
-      price: p.price,
-      category: p.category,
-      description: p.description,
-      image: p.images?.[0] || "",
+      title: product.title || "",
+      price: product.price || "",
+      category: product.category || "",
+      description: product.description || "",
+      image: product.images?.[0] || "",
     });
-
-    setEditingId(p._id);
+    setEditingId(product.id);
     setShowForm(true);
   };
 
-  // Delete product
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete product?")) return;
-
-    await fetch(`http://localhost:5000/products/product/${id}`, {
-      method: "DELETE",
-    });
-
+    if (!window.confirm("Delete this Styllin product?")) return;
+    await fetch(`${API}/products/${id}`, { method: "DELETE" });
     fetchProducts();
   };
 
-  return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <Sidebar
-        navItems={navItems}
-        activeNav={activeNav}
-        onNavChange={setActiveNav}
-        onLogout={() => (window.location.href = "/")}
-      />
+  const markDelivered = async (orderId) => {
+    try {
+      const res = await fetch(`${API}/users/orders/${orderId}/delivered`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Could not mark order delivered");
+      window.dispatchEvent(new CustomEvent("appToast", { detail: { title: "Order delivered", message: `Order ${orderId.slice(0, 8)} was updated.`, tone: "success" } }));
+      fetchOrders();
+      fetchCustomers();
+    } catch (error) {
+      window.dispatchEvent(new CustomEvent("appToast", { detail: { title: "Delivery update failed", message: error.message, tone: "error" } }));
+    }
+  };
 
-      {/* Main Content */}
-      <div className="flex-1 ml-64">
+  return (
+    <div className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#f4f4f5_42%,#ffffff_100%)]">
+      <Sidebar navItems={navItems} activeNav={activeNav} onNavChange={setActiveNav} onHome={() => (window.location.href = "/")} />
+
+      <main className="pt-24 lg:ml-72 lg:pt-0">
         <SectionHeader
-          title={
-            activeNav === "products"
-              ? "Product Dashboard"
-              : navItems.find((n) => n.id === activeNav)?.label
-          }
-          subtitle={
-            activeNav === "products"
-              ? "Manage your inventory"
-              : `Manage your ${activeNav}`
-          }
+          title={activeNav === "dashboard" ? "Styllin Studio" : navItems.find((item) => item.id === activeNav)?.label}
+          subtitle={activeNav === "dashboard" ? "Orders, product drops, and customer activity" : `Manage Styllin ${activeNav}`}
           showAdd={activeNav === "products"}
           onAddClick={() => setShowForm(true)}
         />
 
-        <div className="p-8">
-          {/* --------------- NON-PRODUCT TABS --------------- */}
-          {/* {activeNav !== "products" && (
-            <div className="bg-white rounded-xl p-12 shadow-sm border text-center">
-              <h2 className="text-2xl font-bold mb-3">
-                {navItems.find((n) => n.id === activeNav)?.label}
-              </h2>
-
-              {user && (
-                <div className="max-w-md mx-auto bg-[#393D7E] p-6 rounded-xl text-left shadow-lg mb-6">
-                  <p className="text-white text-xl font-bold">{user.name}</p>
-                  <p className="text-white text-opacity-80">
-                    User ID: {user.id}
-                  </p>
-                </div>
-              )}
-
-              <p className="text-gray-500">
-                This section is coming soon. Switch to Products to manage your
-                inventory.
-              </p>
-            </div>
-          )} */}
-          {activeNav === "orders" && (
-            <div className="bg-white p-6 rounded-xl shadow">
-              <h2 className="text-2xl font-bold mb-4">Active Orders</h2>
-
-              {orders.length === 0 ? (
-                <p className="text-gray-500">No active orders.</p>
-              ) : (
-                <div className="space-y-6">
-                  {orders.map((user) => (
-                    <div key={user._id} className="border rounded-lg p-4">
-                      <p className="font-semibold">
-                        {user.name} ({user.email})
-                      </p>
-                      <p>Total: ₹{user.activeOrder.total}</p>
-
-                      <div className="mt-3 space-y-2">
-                        {user.activeOrder.items.map((item, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center gap-3 border p-3 rounded"
-                          >
-                            <img
-                              src={item.image}
-                              className="w-16 h-16 object-cover rounded"
-                            />
-                            <div>
-                              <p className="font-medium">{item.title}</p>
-                              <p className="text-sm text-gray-600">
-                                Qty: {item.qty} • ₹{item.priceAtPurchase}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <button
-                        onClick={() => markDelivered(user._id)}
-                        className="mt-4 bg-green-600 text-white px-4 py-2 rounded"
-                      >
-                        Mark Delivered
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* --------------- PRODUCT PAGE ONLY --------------- */}
-          {activeNav === "products" && (
+        <div className="space-y-6 px-5 py-6 lg:px-8 lg:py-8">
+          {activeNav === "dashboard" && (
             <>
-              {/* Stats (no StatCard component) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-white p-5 shadow-sm rounded-lg border">
-                  <p className="text-sm text-gray-500">Total Products</p>
-                  <p className="text-2xl font-bold">{stats.totalProducts}</p>
-                </div>
-
-                <div className="bg-white p-5 shadow-sm rounded-lg border">
-                  <p className="text-sm text-gray-500">Total Value</p>
-                  <p className="text-2xl font-bold">
-                    ₹{stats.totalRevenue.toLocaleString()}
-                  </p>
-                </div>
-
-                <div className="bg-white p-5 shadow-sm rounded-lg border">
-                  <p className="text-sm text-gray-500">Categories</p>
-                  <p className="text-2xl font-bold">{stats.categories}</p>
+              <div className="overflow-hidden rounded-lg bg-black px-6 py-7 text-white shadow-2xl shadow-zinc-900/15">
+                <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-300">Store command center</p>
+                    <h2 className="mt-3 max-w-2xl text-3xl font-bold md:text-4xl">Premium operations for catalog, orders, and customers.</h2>
+                    <p className="mt-3 max-w-xl text-sm leading-6 text-white/60">Keep the Styllin storefront current while tracking checkout and delivery activity from one focused workspace.</p>
+                  </div>
+                  <div className="rounded-lg border border-white/10 bg-white/10 px-4 py-3">
+                    <p className="text-xs uppercase tracking-[0.16em] text-white/50">Total revenue</p>
+                    <p className="mt-1 text-2xl font-bold">{formatCurrency(stats.revenue)}</p>
+                  </div>
                 </div>
               </div>
 
-              {/* Product Grid */}
-              <div className="bg-white shadow-sm rounded-xl border">
-                <div className="px-6 py-4 border-b">
-                  <h2 className="text-lg font-semibold">All Products</h2>
-                  <p className="text-sm text-gray-500">
-                    {products.length} total items
-                  </p>
-                </div>
-
-                {products.length === 0 ? (
-                  <div className="text-center py-16">
-                    <ShoppingCart
-                      size={48}
-                      className="text-gray-300 mx-auto mb-3"
-                    />
-                    <p className="text-gray-500">No products yet.</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-6">
-                    {products.map((p) => (
-                      <ProductCard
-                        key={p._id}
-                        product={p}
-                        onEdit={() => handleEdit(p)}
-                        onDelete={() => handleDelete(p._id)}
-                      />
-                    ))}
-                  </div>
-                )}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <StatCard icon={TrendingUp} label="Revenue" value={formatCurrency(stats.revenue)} caption="Paid and delivered orders" />
+                <StatCard icon={Package} label="Products" value={stats.products} caption="Live catalog pieces" />
+                <StatCard icon={Truck} label="Orders" value={stats.orders} caption="All checkout records" />
+                <StatCard icon={Users} label="Customers" value={stats.customers} caption="Registered shoppers" />
               </div>
+
+              <Card className="shadow-lg shadow-zinc-900/5">
+                <CardHeader className="gap-4 sm:flex sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <CardTitle>Recent Orders</CardTitle>
+                    <p className="text-sm text-zinc-500">Latest Styllin checkouts and delivery state</p>
+                  </div>
+                  <Button variant="outline" onClick={() => setActiveNav("orders")}>View orders</Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-hidden rounded-lg border">
+                    <Table>
+                      <thead><tr><Th>Customer</Th><Th>Status</Th><Th>Items</Th><Th>Total</Th></tr></thead>
+                      <tbody>
+                        {orders.slice(0, 5).map((order) => (
+                          <tr key={order.id}>
+                            <Td>{order.user?.name || order.delivery?.name || "Guest"}</Td>
+                            <Td><Badge tone={statusTone[order.status] || "gray"}>{order.status}</Badge></Td>
+                            <Td>{order.items?.length || 0} pieces</Td>
+                            <Td className="font-semibold">{formatCurrency(order.total)}</Td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
             </>
           )}
-        </div>
-      </div>
 
-      {/* Modal */}
+          {activeNav === "products" && (
+            <Card className="shadow-lg shadow-zinc-900/5">
+              <CardHeader className="gap-4 md:flex md:flex-row md:items-center md:justify-between">
+                <div>
+                  <CardTitle>Product Catalog</CardTitle>
+                  <p className="text-sm text-zinc-500">Fashion pieces shown across the shop and checkout.</p>
+                </div>
+                <div className="relative w-full md:w-80">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                  <Input className="pl-9" placeholder="Search title or category" value={query} onChange={(e) => setQuery(e.target.value)} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {filteredProducts.map((product) => (
+                    <motion.div key={product.id} whileHover={{ y: -3 }} transition={{ duration: 0.18 }} className="rounded-lg border bg-white overflow-hidden">
+                      <div className="aspect-[4/5] bg-zinc-100 overflow-hidden">
+                        <img src={product.images?.[0]} alt={product.title} className="h-full w-full object-cover transition-transform duration-300 hover:scale-105" />
+                      </div>
+                      <div className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <h3 className="font-semibold text-zinc-950 line-clamp-1">{product.title}</h3>
+                            <p className="text-sm text-zinc-500 line-clamp-1">{product.category}</p>
+                          </div>
+                          <Badge tone="teal">{formatCurrency(product.price)}</Badge>
+                        </div>
+                        <p className="text-sm text-zinc-600 line-clamp-2 min-h-10">{product.description}</p>
+                        <div className="flex gap-2">
+                          <Button variant="outline" className="flex-1" onClick={() => handleEdit(product)}>Edit</Button>
+                          <Button variant="danger" className="flex-1" onClick={() => handleDelete(product.id)}>Delete</Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {activeNav === "orders" && (
+            <Card className="shadow-lg shadow-zinc-900/5">
+              <CardHeader>
+                <CardTitle>Order Desk</CardTitle>
+                <p className="text-sm text-zinc-500">Track paid pieces from checkout to delivery.</p>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-hidden rounded-lg border">
+                  <Table>
+                    <thead><tr><Th>Order</Th><Th>Customer</Th><Th>Status</Th><Th>Items</Th><Th>Total</Th><Th></Th></tr></thead>
+                    <tbody>
+                      {orders.map((order) => (
+                        <tr key={order.id}>
+                          <Td className="font-mono text-xs">{order.id.slice(0, 8)}</Td>
+                          <Td>{order.user?.name || order.delivery?.name || "Customer"}<div className="text-xs text-zinc-500">{order.user?.email || order.delivery?.email}</div></Td>
+                          <Td><Badge tone={statusTone[order.status] || "gray"}>{order.status}</Badge></Td>
+                          <Td>{order.items?.map((item) => `${item.title} x${item.qty || item.quantity}`).join(", ")}</Td>
+                          <Td className="font-semibold">{formatCurrency(order.total)}</Td>
+                          <Td className="text-right">
+                            {!["DELIVERED", "CANCELLED"].includes(order.status) && (
+                              <Button size="sm" onClick={() => markDelivered(order.id)}><CheckCircle2 size={16} />Delivered</Button>
+                            )}
+                          </Td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {activeNav === "customers" && (
+            <Card className="shadow-lg shadow-zinc-900/5">
+              <CardHeader>
+                <CardTitle>Customers</CardTitle>
+                <p className="text-sm text-zinc-500">Registered Styllin shoppers and their order activity.</p>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-hidden rounded-lg border">
+                  <Table>
+                    <thead><tr><Th>Name</Th><Th>Email</Th><Th>Verified</Th><Th>Orders</Th><Th>Total Spend</Th></tr></thead>
+                    <tbody>
+                      {customers.map((customer) => (
+                        <tr key={customer.id}>
+                          <Td className="font-medium">{customer.name}</Td>
+                          <Td>{customer.email}</Td>
+                          <Td><Badge tone={customer.verified ? "green" : "amber"}>{customer.verified ? "Verified" : "Pending"}</Badge></Td>
+                          <Td>{customer.orderCount}</Td>
+                          <Td className="font-semibold">{formatCurrency(customer.totalSpend)}</Td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+        </div>
+      </main>
+
       <ProductFormModal
         visible={showForm}
         form={form}
@@ -325,7 +345,6 @@ export default function AdminDashboard() {
         onSubmit={handleSubmit}
         onCancel={() => {
           resetForm();
-          setEditingId(null);
           setShowForm(false);
         }}
       />

@@ -17,12 +17,11 @@ import CartPage from "./pages/Cart";
 import Login from "./pages/Login";
 import ScrollTopBtn from "./components/ScrollTopBtn";
 import AdminDashboard from "./pages/AdminDashboard";
-import PaymentPage from "./pages/Payment";
-import SuccessPage from "./pages/SuccessPage";
-import CancelPage from "./pages/CancelPage";
 import SmoothScroll from "./components/SmoothScroll";
 import VerifyEmailPage from "./components/VerifyEmailPage";
 import Orders  from "./pages/Orders";
+import Account from "./pages/Account";
+import AppToast from "./components/AppToast";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -41,6 +40,7 @@ function AnimatedRoutes({ setCartCount }) {
 
   return (
     <>
+      <AppToast />
       <ScrollTopBtn />
 
       <ScrollToTop />
@@ -51,12 +51,9 @@ function AnimatedRoutes({ setCartCount }) {
           <Route path="/shop" element={<Shop setCartCount={setCartCount} />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/about" element={<About />} />
-          <Route path="/payment" element={<PaymentPage />} />
           <Route path="/cart" element={<CartPage setCartCount={setCartCount} />}/>
-         <Route path="/success" element={<SuccessPage />} />
-         <Route path="/cancel" element={<CancelPage />} />
           <Route path="/orders" element={<Orders />} />
-          <Route path="adminpanel" element={<adminpanel/>}/>
+          <Route path="/account" element={<Account />} />
 
 
           <Route path="/verify/:token" element={<VerifyEmailPage />} />
