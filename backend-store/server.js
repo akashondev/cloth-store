@@ -7,16 +7,13 @@ import userRoutes from "./routes/userRoutes.js";
 import paymentRoutes, { webhookHandler } from "./routes/paymentRoutes.js";
 import { prisma } from "./utils/prisma.js";
 import { reconcileDueOrders } from "./utils/orderDelivery.js";
+import { corsOptions } from "./utils/corsConfig.js";
 
 const app = express();
 
 // CORS MUST BE HERE
 app.use(
-  cors({
-    origin: "http://localhost:3001",
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true,
-  })
+  cors(corsOptions)
 );
 
 app.post("/payment/webhook", express.raw({ type: "application/json" }), webhookHandler);
